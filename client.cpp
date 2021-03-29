@@ -38,7 +38,7 @@ int main()
 		show_ground(ground);
 		judge(ground);
 	}
-	
+
 
 
 	//second
@@ -53,10 +53,14 @@ int main()
 }
 void init_ground(char ground[3][3])
 {
+	char c = '1';
 	for (int i = 0; i < 3; i++)
 	{
 		for (int j = 0; j < 3; j++)
-			ground[i][j] = (char)3 * (i + 1) + (j - 2) + 48;
+		{
+			ground[i][j] = c;
+			c++;
+		}
 	}
 }
 void update_ground(char ground[3][3], string s, int c)
@@ -102,7 +106,7 @@ void judge(char ground[3][3])
 		if (ground[i][0] == ground[i][1] && ground[i][0] == ground[i][2] && ground[i][0] == '*')
 		{
 			cout << "* won!" << endl;
-			
+			exit(0);
 		}
 	}
 	for (int i = 0; i < 3; i++)
@@ -115,7 +119,7 @@ void judge(char ground[3][3])
 		if (ground[0][i] == ground[1][i] && ground[0][i] == ground[2][i] && ground[0][i] == '*')
 		{
 			cout << "* won!" << endl;
-			
+			exit(0);
 		}
 	}
 	if (ground[0][0] == ground[1][1] && ground[0][0] == ground[2][2] && ground[0][0] == '#')
@@ -126,7 +130,7 @@ void judge(char ground[3][3])
 	if (ground[0][0] == ground[1][1] && ground[0][0] == ground[2][2] && ground[0][0] == '*')
 	{
 		cout << "* won!" << endl;
-		
+		exit(0);
 	}
 
 	if (ground[0][2] == ground[1][1] && ground[2][0] == ground[1][1] && ground[1][1] == '#')
@@ -137,6 +141,25 @@ void judge(char ground[3][3])
 	if (ground[0][2] == ground[1][1] && ground[2][0] == ground[1][1] && ground[1][1] == '*')
 	{
 		cout << "* won!" << endl;
-		
+		exit(0);
+	}
+	bool flag = TRUE;
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			if (!(ground[i][j] == '*' || ground[i][j] == '#'))
+			{
+				flag = FALSE;
+				break;
+			}
+		}
+		if (!flag)
+			break;
+	}
+	if (flag)
+	{
+		cout << "Draw:)!" << endl;
+		exit(0);
 	}
 }
