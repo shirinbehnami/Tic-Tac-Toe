@@ -84,7 +84,7 @@ void ground::judge()
 	{
 		if (blocks[winblocks[i][0]] == blocks[winblocks[i][1]] && blocks[winblocks[i][1]] == blocks[winblocks[i][2]])
 		{
-			if (blocks[winblocks[i][0]] == -1)
+			if (blocks[winblocks[i][0]] == -2)
 			{
 				cout << " congratulations, you wiiiiiiiin :))" << endl;
 				exit(0);
@@ -137,7 +137,7 @@ void player::write_move()
 		cout << "This block is not exist" << endl;
 		write_move();
 	}
-	gr.update_ground(num - 1, -1, this);
+	gr.update_ground(num - 1, -2, this);
 	gr.show_ground();
 	write(sock, boost::asio::buffer(msg));
 	gr.judge();
@@ -148,7 +148,7 @@ void player::read_move()
 	read_until(sock, buff, "\n");
 	string s = buffer_cast<const char*>(buff.data());
 	int num = atoi(s.c_str());
-	gr.update_ground(num - 1, -2, this);
+	gr.update_ground(num - 1, -1, this);
 	gr.show_ground();
 	gr.judge();
 }

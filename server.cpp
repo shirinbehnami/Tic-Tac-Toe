@@ -49,11 +49,9 @@ void player::read_move(player* pl)
 int main()
 {
 	io_service io;
-	tcp::acceptor acc1(io, tcp::endpoint(tcp::v4(), 1234));
-	player pl1(io, acc1);
+	tcp::acceptor acc(io, tcp::endpoint(tcp::v4(), 1234));
+	player pl1(io, acc);
 
-	io_service io2;
-	tcp::acceptor acc2(io2, tcp::endpoint(tcp::v4(), 1234));
-	player pl2(io2, acc2);
+	player pl2(io, acc);
 	pl1.playgame(&pl2);
 }
