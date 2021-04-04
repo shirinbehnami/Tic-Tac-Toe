@@ -3,161 +3,275 @@
 #include <iostream>
 #include <boost/asio.hpp>
 #include <vector>
+#include <iomanip>
 
 using namespace std;
 using namespace boost::asio;
 using namespace ip;
 
-//player class 
-class player
-{
-public:
-	player(io_service& io_service);
-	void playgame();
-	void write_move();
-	void read_move();
-private:
-	tcp::socket sock;
-};
-
+ 
 //ground class
 class ground
 {
 public:
-	ground();
-	void show_ground();
-	void update_ground(int numblock, int who, player* pl);
-	void judge();
+	ground(int n);
+	void show_ground(int n);
+	void update_ground(int numblock, int who);
+	int get_block(int i) { return blocks[i]; }
+	int get_cnt() { return cntblocks; }
 private:
-	int blocks[9];
-	const vector<vector<int>> winblocks = { {0,1,2},{3,4,5},{6,7,8},{0,3,6},{1,4,7},{2,5,8},{0,4,8},{2,4,6} };
-}gr;
+	vector<int> blocks;
+	int cntblocks;
+	void show_ground1();
+	void show_ground2();
+	void show_ground3();
+};
+//player class
+class player
+{
+public:
+	player(io_service& io_service);
+	void playgame(ground gr,int i);
+	void write_move(ground& gr);
+	void read_move(ground& gr,int i);
+	int choose_ground();
+	void show_result(int n);
+	void error_handler(player* pl, ground& gr,int num);
+	tcp::socket* get_sock();
+private:
+	tcp::socket sock;
+};
 
-ground::ground()
+///////////////////////////////////////////////////////////////////////////////////////////
+ground::ground(int n)
 {
-	for (int i = 0; i < 9; i++)
-		blocks[i] = i + 1;
+	switch (n) {
+	case 1:
+		cntblocks = 9;
+		break;
+	case 2:
+		cntblocks = 16;
+		break;
+	case 3:
+		cntblocks = 24;
+		break;
+
+	}
+	for (int i = 0; i < cntblocks; i++)
+		blocks.push_back(i + 1);
 }
-void ground::show_ground()
+void ground::show_ground(int n)
 {
+	switch (n) {
+	case 1:
+		show_ground1();
+		break;
+	case 2:
+		show_ground2();
+		break;
+	case 3:
+		show_ground3();
+		break;
+	}
+}
+void ground::show_ground1()
+{
+	vector<string> showground;
+
+	for (int i = 0; i < cntblocks; i++)
+	{
+		if (blocks[i] == -1)
+			showground.push_back("O");
+		else if (blocks[i] == -2)
+			showground.push_back("X");
+		else
+			showground.push_back(to_string(blocks[i]));
+	}
 	cout << endl;
 	cout << "     |     |     " << endl;
-	for (int i = 0; i < 3; i++)
-	{
-		for (int j = 0; j < 3; j++)
-		{
-			if (blocks[3 * i + j] == -1)
-				cout << "  O";
-			else if (blocks[3 * i + j] == -2)
-				cout << "  X";
-			else
-				cout << "  " << blocks[3 * i + j];
-			if (j != 2)
-			{
-				cout << "  |";
-			}
-		}
-		cout << endl;
-		if (i < 2)
-		{
-			cout << "_____|_____|_____" << endl;
-			cout << "     |     |     " << endl;
-		}
-	}
+	cout << "  " << left << showground[0] << "  |  " << showground[1] << "  |  " << showground[2] << endl;
+	cout << "_____|_____|_____" << endl;
+	cout << "     |     |     " << endl;
+	cout << "  " << showground[3] << "  |  " << showground[4] << "  |  " << showground[5] << endl;
+	cout << "_____|_____|_____" << endl;
+	cout << "     |     |     " << endl;
+	cout << "  " << showground[6] << "  |  " << showground[7] << "  |  " << showground[8] << endl;
 	cout << "     |     |     " << endl << endl;
 }
-void ground::update_ground(int numblock, int who, player* pl)
-{
-	if (blocks[numblock] == -1 || blocks[numblock] == -2)
-	{
-		cout << "this block is full, please select another one" << endl;
-		pl->write_move();
-	}
-	else
-	{
-		blocks[numblock] = who;
-	}
-}
-void ground::judge()
-{
-	for (int i = 0; i < winblocks.size(); i++)
-	{
-		if (blocks[winblocks[i][0]] == blocks[winblocks[i][1]] && blocks[winblocks[i][1]] == blocks[winblocks[i][2]])
-		{
-			if (blocks[winblocks[i][0]] == -1)
-			{
-				cout << " congratulations, you wiiiiiiiin :))" << endl;
-				exit(0);
-			}
-			else
-			{
-				cout << "oh no, you lose:((" << endl;
-				exit(0);
-			}
-		}
-	}
-	bool flag = TRUE;
-	for (int i = 0; i < 9; i++)
-	{
-		if (blocks[i] != -1 && blocks[i] != -2)
-		{
-			flag = FALSE;
-			break;
-		}
-	}
-	if (flag)
-	{
-		cout << "Draw:)!" << endl;
-		exit(0);
-	}
-}
 
-//function of player class 
+void ground::show_ground2()
+{
+	vector<string> showground;
+
+	for (int i = 0; i < cntblocks; i++)
+	{
+		if (blocks[i] == -1)
+			showground.push_back("O");
+		else if (blocks[i] == -2)
+			showground.push_back("X");
+		else
+			showground.push_back(to_string(blocks[i]));
+	}
+	cout << endl;
+	cout << " " << left << showground[0] << " _____ " << showground[1] << " _____ " << showground[2] << endl;
+	cout << " |       |       |" << endl;
+	cout << " |  " << showground[3] << "  _ " << showground[4] << " _  " << showground[5] << "  |" << endl;
+	cout << " |  |         |  |" << endl;
+	cout << " " << showground[6] << "__" << showground[7] << "         " << showground[8] << "__" << showground[9] << endl;
+	cout << " |  |         |  |" << endl;
+	cout << " |  " << setw(2) << showground[10] << " _ " << setw(2) << showground[11] << " _ " << setw(2) << showground[12] << " |" << endl;
+	cout << " |       |       |" << endl;
+	cout << " " << setw(2) << showground[13] << " ____ " << setw(2) << showground[14] << "_____ " << showground[15] << endl;
+}
+void ground::show_ground3()
+{
+	vector<string> showground;
+
+	for (int i = 0; i < cntblocks; i++)
+	{
+		if (blocks[i] == -1)
+			showground.push_back("O");
+		else if (blocks[i] == -2)
+			showground.push_back("X");
+		else
+			showground.push_back(to_string(blocks[i]));
+	}
+
+	cout <<
+		showground[0] << "____________" << showground[1] << "____________" << showground[2] << endl
+		<< "| \\          |          / |" << endl
+		<< "|   " << showground[3] << "________" << showground[4] << "________" << showground[5] << "   |" << endl
+		<< "|   | \\      |      / |   |" << endl
+		<< "|   |   " << showground[6] << "____" << showground[7] << "____" << showground[8] << "   |   |" << endl
+		<< "|   |   |         |   |   |" << endl
+		<< "|   |   |         |   |   |" << endl
+		<< showground[9] << "___" << setw(2) << showground[10] << "__" << setw(2) << showground[11] << "       " << showground[12] << "___" << showground[13] << "___" << showground[14] << endl
+		<< "|   |   |         |   |   |" << endl
+		<< "|   |   |         |   |   |" << endl
+		<< "|   |   " << showground[15] << "___" << showground[16] << "___" << showground[17] << "  |   |" << endl
+		<< "|   |  /     |      \\ |   |" << endl
+		<< "|   " << showground[18] << "_______" << showground[19] << "_______" << showground[20] << "  |" << endl
+		<< "|  /         |         \\  |" << endl
+		<< setw(2) << showground[21] << "___________" << showground[22] << "___________" << showground[23] << endl;
+
+
+
+
+}
+void ground::update_ground(int numblock, int who)
+{
+		blocks[numblock] = who;
+}
+/////////////////////////////////////////////////////////////////////function of player class 
 player::player(io_service& io_service)
 	:sock(io_service)
 {
 	sock.connect(tcp::endpoint(address::from_string("127.0.0.1"), 1234));
 }
-void player::playgame()
+void player::playgame(ground gr,int i)
 {
 	while (1)
 	{
-		write_move();
-		read_move();
+		write_move(gr);
+		gr.show_ground(i);
+		read_move(gr,i);
+		gr.show_ground(i);
 	}
 }
-void player::write_move()
+void player::write_move(ground& gr)
 {
 	string msg;
 	getline(cin, msg);
 	msg += "\n";
 	int num = atoi(msg.c_str());
-	if (num < 1 || num>9)
-	{
-		cout << "This block is not exist" << endl;
-		write_move();
-	}
-	gr.update_ground(num - 1, -1, this);
-	gr.show_ground();
+	error_handler(this,gr,num);
+	gr.update_ground(num - 1, -1);
 	write(sock, boost::asio::buffer(msg));
-	gr.judge();
 }
-void player::read_move()
+void player::read_move(ground& gr,int n)
 {
 	boost::asio::streambuf buff;
 	read_until(sock, buff, "\n");
 	string s = buffer_cast<const char*>(buff.data());
-	int num = atoi(s.c_str());
-	gr.update_ground(num - 1, -2, this);
-	gr.show_ground();
-	gr.judge();
-}
+	int num, state;
+	string sub = "-";
+	for (int i = 0; i < 2; i++)
+	{
+		size_t pos = s.find(sub);
+		stringstream geek(s.substr(0, pos));
+		if (i == 0)
+			geek >> num;
+		if (i == 1)
+			geek >> state;
+		s.erase(0, pos + sub.length());
+	}
+	if(state!=1)
+		gr.update_ground(num - 1, -2);
+	if (state == 1 || state == 2 || state == 0)
+	{
+		gr.show_ground(n);
+		this->show_result(state);
+	}
 
+
+
+
+}
+tcp::socket* player::get_sock()
+{
+	return &sock;
+}
+int player::choose_ground()
+{
+	boost::asio::streambuf buff;
+	read_until(sock, buff, "\n");
+	string s = buffer_cast<const char*>(buff.data());
+	cout <<s<<">>";
+	string msg;
+	getline(cin, msg);
+	msg += "\n";
+	write(sock, boost::asio::buffer(msg));
+	return atoi(msg.c_str());
+
+}
+void player::error_handler(player* pl, ground& gr, int num)
+{
+	if (num<1 || num>gr.get_cnt())
+	{
+		cout << "this block doesn't exist.try another one." << endl;
+
+	}
+	else if (gr.get_block(num) == -1 || gr.get_block(num) == -2)
+	{
+		cout << "sorry this block is already full.try another one." << endl;
+
+	}
+	else return;
+}
+void player::show_result(int num)
+{
+	switch (num) {
+	case 1:
+		cout << "congrajulations! you wiiiiiiin!" << endl;
+		exit(0);
+		break;
+	case 2:
+		cout << "Game over:(" << endl;
+		exit(0);
+		break;
+	case 0:
+		cout << "Draw!" << endl;
+		exit(0);
+		break;
+	}
+}
 //main function
 int main()
 {
-	gr.show_ground();
 	io_service io;
 	player pl(io);
-	pl.playgame();
+	int i=pl.choose_ground();
+	ground gr(i);
+	gr.show_ground(i);
+	pl.playgame(gr,i);
 }
