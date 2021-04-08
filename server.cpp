@@ -171,23 +171,33 @@ void player::playgame(player* pl2, int n, ground g)
 	while (1)
 	{
 		this->read_move(pl2, s);
-		if (s != "4\n")
+		if (s == "0\n")
+			i = 2;
+		else
+		{
 			g.update_ground(atoi(s.c_str()) - 1, -1);
-		i = g.judge(n);
+			i = g.judge(n);
+		}
 		msg = s + '-' + to_string(i);
 		write(*(pl2->get_sock()), boost::asio::buffer(msg));
-		if (i == 1 || i == 0)
+		if (i !=3)
 		{
 			msg = s + '-' + to_string(i);
 			write(sock, boost::asio::buffer(msg));
 		}
+		
+		
 		pl2->read_move(this, s);
-		if (s != "4\n")
+		if (s == "0\n")
+			i = 1;
+		else
+		{
 			g.update_ground(atoi(s.c_str()) - 1, -2);
-		i = g.judge(n);
+			i = g.judge(n);
+		}
 		msg = s + '-' + to_string(i);
 		write(sock, boost::asio::buffer(msg));
-		if (i == 2 || i == 0)
+		if (i !=3)
 		{
 			msg = s + '-' + to_string(i);
 			write(*(pl2->get_sock()), boost::asio::buffer(msg));

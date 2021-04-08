@@ -216,11 +216,14 @@ void player::playgame(ground gr, int i)
 			cout << "Your time is up" << endl;
 			t1.detach();
 			t1.~thread();
-			write(sock, boost::asio::buffer("4\n"));
+			write(sock, boost::asio::buffer("0\n"));
 		}
 		else
+		{
 			t1.join();
-
+			system("cls");
+			gr.show_ground(i);
+		}
 		read_move(gr, i);
 		gr.show_ground(i);
 	}
@@ -253,9 +256,9 @@ void player::read_move(ground& gr, int n)
 			geek >> state;
 		s.erase(0, pos + sub.length());
 	}
-	if (state != 1 && num != 4)
+	if (state != 1 && num!=0 && !(n==1 && state==0))
 		gr.update_ground(num - 1, -2);
-	if (state == 1 || state == 2 || state == 0)
+	if (state !=3)
 	{
 		gr.show_ground(n);
 		this->show_result(state);
@@ -296,9 +299,9 @@ int player::choose_ground()
 //	}
 //	else return;
 //}
-void player::show_result(int num)
+void player::show_result(int state)
 {
-	switch (num) {
+	switch (state) {
 	case 1:
 		cout << "congrajulations! you wiiiiiiin!" << endl;
 		exit(0);

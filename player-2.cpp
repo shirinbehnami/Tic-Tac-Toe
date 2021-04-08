@@ -1,4 +1,4 @@
-//player1
+//player2
 // player1:O,-1    player2:x,-2
 #include <iostream>
 #include <boost/asio.hpp>
@@ -218,10 +218,14 @@ void player::playgame(ground gr, int i)
 			cout << "Your time is up" << endl;
 			t1.detach();
 			t1.~thread();
-			write(sock, boost::asio::buffer("4\n"));
+			write(sock, boost::asio::buffer("0\n"));
 		}
 		else
+		{
 			t1.join();
+			system("cls");
+			gr.show_ground(i);
+		}
 	}
 }
 void player::write_move(ground& gr, int& flag)
@@ -252,9 +256,9 @@ void player::read_move(ground& gr, int n)
 			geek >> state;
 		s.erase(0, pos + sub.length());
 	}
-	if (state != 2 && num != 4)
+	if (state != 2 && num != 0 && !(n!=1 && state==0))
 		gr.update_ground(num - 1, -1);
-	if (state == 1 || state == 2 || state == 0)
+	if (state !=3)
 	{
 		gr.show_ground(n);
 		show_result(state);
@@ -290,9 +294,9 @@ int player::chosen_ground()
 //	}
 //	else return;
 //}
-void player::show_result(int num)
+void player::show_result(int state)
 {
-	switch (num) {
+	switch (state) {
 	case 2:
 		cout << "congrajulations! you wiiiiiiin!" << endl;
 		exit(0);
