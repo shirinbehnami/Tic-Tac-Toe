@@ -1,9 +1,10 @@
-//player2
+//player1
 // player1:O,-1    player2:x,-2
 #include <iostream>
 #include <boost/asio.hpp>
 #include <vector>
 #include <iomanip>
+#include<thread>
 
 using namespace std;
 using namespace boost::asio;
@@ -35,14 +36,14 @@ public:
 	player(io_service& io_service);
 	void playgame(ground gr, int i);
 	void write_move(ground& gr, int& flag);
-	void read_move(ground& gr, int n);
-	int chosen_ground();
+	void read_move(ground& gr, int i);
+	int choose_ground();
 	void show_result(int n);
 	//void error_handler(player* pl, ground& gr, int num);
 	tcp::socket* get_sock();
-
 private:
 	tcp::socket sock;
+	int playernum;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -115,7 +116,7 @@ void ground::show_ground1()
 		else
 			showground.push_back(to_string(blocks[i]));
 	}
-	cout << endl;
+	cout << endl << endl;
 	cout << "     |     |     " << endl;
 	cout << "  " << left << showground[0] << "  |  " << showground[1] << "  |  " << showground[2] << endl;
 	cout << "_____|_____|_____" << endl;
@@ -148,7 +149,7 @@ void ground::show_ground2()
 	cout << " |  |         |  |" << endl;
 	cout << " |  " << setw(2) << showground[10] << " _ " << setw(2) << showground[11] << " _ " << setw(2) << showground[12] << " |" << endl;
 	cout << " |       |       |" << endl;
-	cout << " " << setw(2) << showground[13] << " ____ " << setw(2) << showground[14] << "_____ " << showground[15] << endl;
+	cout << " " << setw(2) << showground[13] << " ____ " << setw(2) << showground[14] << "_____ " << showground[15] << endl << endl;
 }
 void ground::show_ground3()
 {
@@ -164,6 +165,7 @@ void ground::show_ground3()
 			showground.push_back(to_string(blocks[i]));
 	}
 
+	cout << endl;
 	cout <<
 		showground[0] << "____________" << showground[1] << "____________" << showground[2] << endl
 		<< "| \\          |          / |" << endl
@@ -179,7 +181,7 @@ void ground::show_ground3()
 		<< "|   |  /     |      \\ |   |" << endl
 		<< "|   " << showground[18] << "_______" << showground[19] << "_______" << showground[20] << "  |" << endl
 		<< "|  /         |         \\  |" << endl
-		<< setw(2) << showground[21] << "___________" << showground[22] << "___________" << showground[23] << endl;
+		<< setw(2) << showground[21] << "___________" << showground[22] << "___________" << showground[23] << endl << endl;
 
 
 
@@ -205,10 +207,16 @@ player::player(io_service& io_service)
 }
 void player::playgame(ground gr, int i)
 {
+	bool whilecnt = false;
 	while (1)
 	{
-		read_move(gr, i);
-		gr.show_ground(i);
+		if (playernum == 2 || whilecnt == true)
+		{
+			read_move(gr, i);
+			gr.show_ground(i);
+		}
+		else
+			whilecnt = true;
 
 		int flag = 1;
 		thread t1(&player::write_move, this, ref(gr), ref(flag));
@@ -236,7 +244,7 @@ void player::write_move(ground& gr, int& flag)
 	int num = atoi(msg.c_str());
 	//error_handler(this, gr, num);
 	flag = 0;
-	gr.update_ground(num - 1, -2);
+	gr.update_ground(num - 1, -1 * (playernum));
 	write(sock, boost::asio::buffer(msg));
 }
 void player::read_move(ground& gr, int n)
@@ -256,29 +264,48 @@ void player::read_move(ground& gr, int n)
 			geek >> state;
 		s.erase(0, pos + sub.length());
 	}
-	if (state != 2 && num != 0 && !(n!=1 && state==0))
-		gr.update_ground(num - 1, -1);
-	if (state !=3)
+	if (state != playernum && num != 0 && !(playernum == 1 && n == 1 && state == 0) && !(playernum == 2 && n != 1 && state == 0))
+	{
+		if (playernum == 1)
+			gr.update_ground(num - 1, -2);
+		else if (playernum == 2)
+			gr.update_ground(num - 1, -1);
+	}
+	if (state != 3)
 	{
 		gr.show_ground(n);
-		show_result(state);
+		this->show_result(state);
 	}
 }
 tcp::socket* player::get_sock()
 {
 	return &sock;
 }
-int player::chosen_ground()
+int player::choose_ground()
 {
 	boost::asio::streambuf buff;
 	read_until(sock, buff, "\n");
 	string s = buffer_cast<const char*>(buff.data());
-	cout << s << endl;
+	if (s == "one\n")
+	{
+		playernum = 1;
+		cout << "Hi! you are the first player! choose the ground :)(enter its number).\n>>";
+		string msg;
+		getline(cin, msg);
+		msg += "\n";
+		write(sock, boost::asio::buffer(msg));
+		return atoi(msg.c_str());
+	}
+	else if (s == "two\n")
+	{
+		playernum = 2;
+		cout << "Hi! you 're the second player.your partner chose ground :" << endl;
 
-	boost::asio::streambuf buff2;
-	read_until(sock, buff2, "\n");
-	string msg = buffer_cast<const char*>(buff2.data());
-	return atoi(msg.c_str());
+		boost::asio::streambuf buff2;
+		read_until(sock, buff2, "\n");
+		string msg = buffer_cast<const char*>(buff2.data());
+		return atoi(msg.c_str());
+	}
 
 }
 //void player::error_handler(player* pl, ground& gr, int num)
@@ -286,6 +313,7 @@ int player::chosen_ground()
 //	if (num<1 || num>gr.get_cnt())
 //	{
 //		cout << "this block doesn't exist.try another one." << endl;
+//
 //	}
 //	else if (gr.get_block(num) == -1 || gr.get_block(num) == -2)
 //	{
@@ -296,19 +324,20 @@ int player::chosen_ground()
 //}
 void player::show_result(int state)
 {
-	switch (state) {
-	case 2:
+	if (state == playernum)
+	{
 		cout << "congrajulations! you wiiiiiiin!" << endl;
 		exit(0);
-		break;
-	case 1:
-		cout << "Game over:(" << endl;
-		exit(0);
-		break;
-	case 0:
+	}
+	else if (state == 0)
+	{
 		cout << "Draw!" << endl;
 		exit(0);
-		break;
+	}
+	else
+	{
+		cout << "Game over:(" << endl;
+		exit(0);
 	}
 }
 //main function
@@ -316,7 +345,7 @@ int main()
 {
 	io_service io;
 	player pl(io);
-	int i = pl.chosen_ground();
+	int i = pl.choose_ground();
 	ground gr(i);
 	gr.show_ground(i);
 	pl.playgame(gr, i);

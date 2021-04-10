@@ -41,7 +41,7 @@ ground::ground(int n)
 void ground::update_ground(int numblock, int who)
 {
 	blocks[numblock] = who;
-	cout << blocks[numblock] << numblock;
+	//cout << blocks[numblock] << numblock;
 }
 
 
@@ -64,7 +64,7 @@ int ground::judge(int n)
 		break;
 
 	}
-	cout << i << endl;
+	//cout << i << endl;
 	return i;
 }
 int ground::judge1()
@@ -180,13 +180,13 @@ void player::playgame(player* pl2, int n, ground g)
 		}
 		msg = s + '-' + to_string(i);
 		write(*(pl2->get_sock()), boost::asio::buffer(msg));
-		if (i !=3)
+		if (i != 3)
 		{
 			msg = s + '-' + to_string(i);
 			write(sock, boost::asio::buffer(msg));
 		}
-		
-		
+
+
 		pl2->read_move(this, s);
 		if (s == "0\n")
 			i = 1;
@@ -197,7 +197,7 @@ void player::playgame(player* pl2, int n, ground g)
 		}
 		msg = s + '-' + to_string(i);
 		write(sock, boost::asio::buffer(msg));
-		if (i !=3)
+		if (i != 3)
 		{
 			msg = s + '-' + to_string(i);
 			write(*(pl2->get_sock()), boost::asio::buffer(msg));
@@ -213,7 +213,7 @@ void player::read_move(player* pl, string& s)
 int player::choose_ground()
 {
 	boost::asio::streambuf buff;
-	string s = "Hi! you are the first player! choose the ground :)(enter its number).";
+	string s = "one";
 	s += "\n";
 	write(sock, boost::asio::buffer(s));
 	read_until(sock, buff, "\n");
@@ -222,7 +222,7 @@ int player::choose_ground()
 }
 void player::inform_chosen_ground(int n)
 {
-	string s = "Hi! you 're the second player.your partner chose ground :";
+	string s = "two";
 	s += "\n";
 	write(sock, boost::asio::buffer(s));
 	s = to_string(n);
