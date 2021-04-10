@@ -51,16 +51,16 @@ void ground::update_ground(int numblock, int who)
 //otherwise return 3.
 int ground::judge(int n)
 {
-	int i=-2;
+	int i = -2;
 	switch (n) {
 	case 1:
-		i=judge1();
+		i = judge1();
 		break;
 	case 2:
-		i=judge2();
+		i = judge2();
 		break;
 	case 3:
-		i=judge3();
+		i = judge3();
 		break;
 
 	}
@@ -68,7 +68,7 @@ int ground::judge(int n)
 	return i;
 }
 int ground::judge1()
-{	
+{
 	const vector<vector<int>> winblocks = { {0,1,2},{3,4,5},{6,7,8},{0,3,6},{1,4,7},{2,5,8},{0,4,8},{2,4,6} };
 	for (int i = 0; i < winblocks.size(); i++)
 		if (blocks[winblocks[i][0]] == blocks[winblocks[i][1]] && blocks[winblocks[i][0]] == blocks[winblocks[i][2]])
@@ -144,8 +144,8 @@ class player
 {
 public:
 	player(io_service& io_service, tcp::acceptor& acc);
-	void playgame(player* pl2,int n,ground g);
-	void read_move(player* pl,string& s);
+	void playgame(player* pl2, int n, ground g);
+	void read_move(player* pl, string& s);
 	tcp::socket* get_sock();
 	int choose_ground();
 	void inform_chosen_ground(int n);
@@ -163,42 +163,52 @@ tcp::socket* player::get_sock()
 {
 	return &sock;
 }
-void player::playgame(player* pl2,int n,ground g)
+void player::playgame(player* pl2, int n, ground g)
 {
 	string s;
 	string msg;
 	int i = 3;
 	while (1)
 	{
-		this->read_move(pl2,s);
-		g.update_ground(atoi(s.c_str())-1, -1);
-		i=g.judge(n);
-		msg=s + '-' + to_string(i);
+		this->read_move(pl2, s);
+		if (s == "0\n")
+			i = 2;
+		else
+		{
+			g.update_ground(atoi(s.c_str()) - 1, -1);
+			i = g.judge(n);
+		}
+		msg = s + '-' + to_string(i);
 		write(*(pl2->get_sock()), boost::asio::buffer(msg));
-		if (i == 1 || i==0)
+		if (i !=3)
 		{
 			msg = s + '-' + to_string(i);
 			write(sock, boost::asio::buffer(msg));
 		}
-		pl2->read_move(this,s);
-		g.update_ground(atoi(s.c_str()) - 1, -2);
-		i = g.judge(n);
-		msg=s + '-' + to_string(i);
+		
+		
+		pl2->read_move(this, s);
+		if (s == "0\n")
+			i = 1;
+		else
+		{
+			g.update_ground(atoi(s.c_str()) - 1, -2);
+			i = g.judge(n);
+		}
+		msg = s + '-' + to_string(i);
 		write(sock, boost::asio::buffer(msg));
-		if (i == 2 || i==0)
+		if (i !=3)
 		{
 			msg = s + '-' + to_string(i);
 			write(*(pl2->get_sock()), boost::asio::buffer(msg));
 		}
 	}
 }
-void player::read_move(player* pl,string& s)
+void player::read_move(player* pl, string& s)
 {
 	boost::asio::streambuf buff;
 	read_until(sock, buff, "\n");
 	s = buffer_cast<const char*>(buff.data());
-
-
 }
 int player::choose_ground()
 {
@@ -230,7 +240,5 @@ int main()
 	int num_of_ground = pl1.choose_ground();
 	ground g(num_of_ground);
 	pl2.inform_chosen_ground(num_of_ground);
-	pl1.playgame(&pl2,num_of_ground,g);
-
-
+	pl1.playgame(&pl2, num_of_ground, g);
 }
