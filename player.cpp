@@ -1,4 +1,4 @@
-//player1
+//player
 // player1:O,-1    player2:x,-2
 #include <iostream>
 #include <boost/asio.hpp>
@@ -9,7 +9,8 @@
 using namespace std;
 using namespace boost::asio;
 using namespace ip;
-
+//general functions
+int correct_input(int min, int max);
 
 //ground class
 class ground
@@ -21,6 +22,7 @@ public:
 	void update_ground(int numblock, int who);
 	int get_block(int i) { return blocks[i]; }
 	int get_cnt() { return cntblocks; }
+	int correct_block();
 private:
 	void displayClock(int sec);
 	vector<int> blocks;
@@ -37,9 +39,8 @@ public:
 	void playgame(ground gr, int i);
 	void write_move(ground& gr, int& flag);
 	void read_move(ground& gr, int i);
-	int choose_ground();
+	int start_game();
 	void show_result(int n);
-	//void error_handler(player* pl, ground& gr, int num);
 	tcp::socket* get_sock();
 private:
 	tcp::socket sock;
@@ -84,17 +85,7 @@ void ground::show_ground_timer(int n, int& flag)
 	do
 	{
 		displayClock(sec);
-		switch (n) {
-		case 1:
-			show_ground1();
-			break;
-		case 2:
-			show_ground2();
-			break;
-		case 3:
-			show_ground3();
-			break;
-		}
+		this->show_ground(n);
 		Sleep(1000);
 		sec--;
 		if (sec < 0) {
@@ -238,11 +229,8 @@ void player::playgame(ground gr, int i)
 }
 void player::write_move(ground& gr, int& flag)
 {
-	string msg;
-	getline(cin, msg);
-	msg += "\n";
-	int num = atoi(msg.c_str());
-	//error_handler(this, gr, num);
+	int num = gr.correct_block();
+	string msg = to_string(num)+"\n";
 	flag = 0;
 	gr.update_ground(num - 1, -1 * (playernum));
 	write(sock, boost::asio::buffer(msg));
@@ -281,7 +269,7 @@ tcp::socket* player::get_sock()
 {
 	return &sock;
 }
-int player::choose_ground()
+int player::start_game()
 {
 	boost::asio::streambuf buff;
 	read_until(sock, buff, "\n");
@@ -290,17 +278,15 @@ int player::choose_ground()
 	{
 		playernum = 1;
 		cout << "Hi! you are the first player! choose the ground :)(enter its number).\n>>";
-		string msg;
-		getline(cin, msg);
-		msg += "\n";
+		int num = correct_input(1, 3);
+		string msg=to_string( num)+"\n";
 		write(sock, boost::asio::buffer(msg));
-		return atoi(msg.c_str());
+		return num;
 	}
 	else if (s == "two\n")
 	{
 		playernum = 2;
 		cout << "Hi! you 're the second player.your partner chose ground :" << endl;
-
 		boost::asio::streambuf buff2;
 		read_until(sock, buff2, "\n");
 		string msg = buffer_cast<const char*>(buff2.data());
@@ -308,20 +294,7 @@ int player::choose_ground()
 	}
 
 }
-//void player::error_handler(player* pl, ground& gr, int num)
-//{
-//	if (num<1 || num>gr.get_cnt())
-//	{
-//		cout << "this block doesn't exist.try another one." << endl;
-//
-//	}
-//	else if (gr.get_block(num) == -1 || gr.get_block(num) == -2)
-//	{
-//		cout << "sorry this block is already full.try another one." << endl;
-//
-//	}
-//	else return;
-//}
+
 void player::show_result(int state)
 {
 	if (state == playernum)
@@ -340,12 +313,46 @@ void player::show_result(int state)
 		exit(0);
 	}
 }
+int correct_input(int min, int max)
+{
+	bool is_correct = false;
+	string msg;
+	int num;
+	char* ptr;
+	do {
+		getline(cin, msg);
+		msg += "\n";
+		num = strtol(msg.c_str(), &ptr, 10);
+		if (num == 0)
+			cout << "invalid input.try again" << endl;
+		else if (num<min || num>max)
+			cout << "out of range.try again" << endl;
+		else
+			is_correct = true;
+
+	} while (!is_correct);
+	return num;
+}
+int ground::correct_block()
+{
+	bool is_correct = false;
+	int num;
+	do {
+		num = correct_input(1,cntblocks);
+	    if (blocks[num - 1] == -1 || blocks[num - 1] == -2)
+			cout << "this block is full.try another one." << endl;
+		else
+			is_correct = true;
+
+	} while (!is_correct);
+	return num;
+}
 //main function
 int main()
 {
 	io_service io;
 	player pl(io);
-	int i = pl.choose_ground();
+	int i = pl.start_game();
 	ground gr(i);
 	gr.show_ground(i);
 	pl.playgame(gr, i);
