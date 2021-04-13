@@ -20,11 +20,12 @@ public:
 	void show_ground(int n);
 	void show_ground_timer(int n, int& flag);
 	void update_ground(int numblock, int who);
+	void displayClock(int min, int sec);
 	int get_block(int i) { return blocks[i]; }
 	int get_cnt() { return cntblocks; }
+	int get_time(int i) { return time[i]; }
 	int correct_block();
 private:
-	void displayClock(int min,int sec);
 	vector<int> blocks;
 	int cntblocks;
 	int time[2];
@@ -90,13 +91,13 @@ void ground::show_ground_timer(int n, int& flag)
 {
 	do
 	{
-		displayClock(time[0],time[1]);
+		displayClock(time[0], time[1]);
 		this->show_ground(n);
 		Sleep(1000);
 		time[1]--;
-		if (time[1]< 0) {
+		if (time[1] < 0) {
 			time[0]--;
-			if (time[0] <0) {
+			if (time[0] < 0) {
 				flag = -1;
 				break;
 			}
@@ -188,7 +189,7 @@ void ground::show_ground3()
 
 
 }
-void ground::displayClock(int min,int sec)
+void ground::displayClock(int min, int sec)
 {
 	system("cls");
 	cout << "       TIME      \n";
@@ -234,6 +235,7 @@ void player::playgame(ground gr, int i)
 		{
 			t1.join();
 			system("cls");
+			gr.displayClock(gr.get_time(0), gr.get_time(1));
 			gr.show_ground(i);
 		}
 	}
