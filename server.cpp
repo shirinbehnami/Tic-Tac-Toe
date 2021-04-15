@@ -149,11 +149,20 @@ public:
 	tcp::socket* get_sock();
 	int choose_ground();
 	void inform_chosen_ground(int n);
+	void registration();
+	string choose_opponent();
+	bool send_req(string opp);
+	string get_name() { return name; };
+	bool accept_or_reject(bool ans);
+
 
 private:
+	string name;
 	tcp::socket sock;
+	static vector<string> names;
 };
-
+//initialize
+vector<string>player::names{};
 player::player(io_service& io_service, tcp::acceptor& acc)
 	:sock(io_service)
 {
@@ -213,32 +222,91 @@ void player::read_move(player* pl, string& s)
 int player::choose_ground()
 {
 	boost::asio::streambuf buff;
-	string s = "one";
-	s += "\n";
-	write(sock, boost::asio::buffer(s));
 	read_until(sock, buff, "\n");
 	string num = buffer_cast<const char*>(buff.data());
 	return atoi(num.c_str());
 }
 void player::inform_chosen_ground(int n)
 {
-	string s = "two";
-	s += "\n";
-	write(sock, boost::asio::buffer(s));
-	s = to_string(n);
+
+	string s = to_string(n);
 	s += "\n";
 	write(sock, boost::asio::buffer(s));
 }
+void player::registration()
+{
+	boost::asio::streambuf buff;
+	read_until(sock, buff, "\n");
+	name = buffer_cast<const char*>(buff.data());
+	names.push_back(name);
+}
+string player::choose_opponent()
+{
+	string s = "two";
+	s += "\n";
+	write(sock, boost::asio::buffer(s));
+	string msg;
+	for(int i=0;i<names.size();i++)
+		if (names[i] != name)
+			msg += names[i];
+	write(sock, boost::asio::buffer(msg+"\n"));
+	
 
+	boost::asio::streambuf buff;
+	read_until(sock, buff, "\n");
+	string opp = buffer_cast<const char*>(buff.data());
+	return opp;
+}
+bool player::send_req(string opp)
+{
+	string s = "one";
+	s += "\n";
+	write(sock, boost::asio::buffer(s));
+	write(sock, boost::asio::buffer(opp+"\n"));
+	boost::asio::streambuf buff;
+	read_until(sock, buff, "\n");
+	string answer= buffer_cast<const char*>(buff.data());
+	if (answer == "1\n")
+		return true;
+	else
+		return false;
+}
+bool player::accept_or_reject(bool ans)
+{
+	if (ans)
+	{
+		write(sock, boost::asio::buffer("1\n"));
+		return true;
+	}
+	else
+	{
+		write(sock, boost::asio::buffer("0\n"));
+		return false;
+	}
+}
 //main function
 int main()
 {
 	io_service io;
 	tcp::acceptor acc(io, tcp::endpoint(tcp::v4(), 1234));
 	player pl1(io, acc);
+	pl1.registration();
 	player pl2(io, acc);
-	int num_of_ground = pl1.choose_ground();
-	ground g(num_of_ground);
-	pl2.inform_chosen_ground(num_of_ground);
-	pl1.playgame(&pl2, num_of_ground, g);
+	pl2.registration();
+	string opp=pl2.choose_opponent();
+	//inja ye tabe find ham mikhaim ke farz mikonim darim.
+	
+	bool answer=pl1.send_req(pl2.get_name());
+	pl1.accept_or_reject(answer);
+	pl2.accept_or_reject(answer);
+	
+	if (answer == true)
+	{
+		int num_of_ground = pl1.choose_ground();
+		ground g(num_of_ground);
+		pl2.inform_chosen_ground(num_of_ground);
+		pl1.playgame(&pl2, num_of_ground, g);
+	}
+	else
+		exit(0);
 }
