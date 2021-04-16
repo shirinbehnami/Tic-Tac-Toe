@@ -47,6 +47,10 @@ public:
 	tcp::socket* get_sock();
 	void choose_opponent();
 	bool accept_or_reject();
+	void chat();
+	void after_game();
+	void receiveFrom();
+	void sendTo();
 private:
 	tcp::socket sock;
 	int playernum;
@@ -326,20 +330,12 @@ int player::start_game()
 void player::show_result(int state)
 {
 	if (state == playernum)
-	{
 		cout << "congrajulations! you wiiiiiiin!" << endl;
-		exit(0);
-	}
 	else if (state == 0)
-	{
 		cout << "Draw!" << endl;
-		exit(0);
-	}
 	else
-	{
 		cout << "Game over:(" << endl;
-		exit(0);
-	}
+	after_game();
 }
 void player::registeration()
 {
@@ -398,6 +394,48 @@ bool player::accept_or_reject()
 	else
 		return false;
 }
+void player::after_game()
+{
+	//int x;
+	//cout << "\n\n\n";
+	//cout << "1-Rematch" << endl << "2-Chat" << endl << "3-Exit" << endl;
+	//inja ehtemalan bayad player1 baraye chat va rematch request befreste:))
+	chat();
+
+	
+}
+void player::chat()
+{
+	system("cls");
+	cout << "__________________________________________________________" << endl;
+	cout << "|                Welcome to WhatsApp++                   |" << endl;
+	cout << "|________________________________________________________|" << endl;
+	thread t1(&player::sendTo, this);
+	thread t2(&player::receiveFrom, this);
+
+	t1.join();
+	t2.join();
+
+}
+void player::receiveFrom()
+{
+	while (1) {
+		boost::asio::streambuf buff;
+		read_until(sock, buff, "\n");
+		cout <<buffer_cast<const char*>(buff.data());
+	}
+}
+
+void player::sendTo()
+{
+	while (1) {
+		string msg;
+		getline(cin, msg);
+		msg += "\n";
+		write(sock, boost::asio::buffer(msg));
+		cout << endl;
+	}
+}
 int correct_input(int min, int max)
 {
 	bool is_correct = false;
@@ -418,7 +456,6 @@ int correct_input(int min, int max)
 	} while (!is_correct);
 	return num;
 }
-
 //main function
 int main()
 {

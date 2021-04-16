@@ -4,6 +4,7 @@
 #include <boost/asio.hpp>
 #include <vector>
 #include <cstdlib>
+#include <thread>
 using namespace std;
 using namespace boost::asio;
 using namespace ip;
@@ -41,7 +42,6 @@ ground::ground(int n)
 void ground::update_ground(int numblock, int who)
 {
 	blocks[numblock] = who;
-	//cout << blocks[numblock] << numblock;
 }
 
 
@@ -64,7 +64,6 @@ int ground::judge(int n)
 		break;
 
 	}
-	//cout << i << endl;
 	return i;
 }
 int ground::judge1()
@@ -154,6 +153,9 @@ public:
 	bool send_req(string opp);
 	string get_name() { return name; };
 	bool accept_or_reject(bool ans);
+	void after_game(player* pl2);
+	void chat_transition(player* p1, player* p2);
+	void chat(player* pl2);
 
 
 private:
@@ -177,7 +179,7 @@ void player::playgame(player* pl2, int n, ground g)
 	string s;
 	string msg;
 	int i = 3;
-	while (1)
+	while (i == 3)
 	{
 		this->read_move(pl2, s);
 		if (s == "0\n")
@@ -195,6 +197,8 @@ void player::playgame(player* pl2, int n, ground g)
 			write(sock, boost::asio::buffer(msg));
 		}
 
+		if (i != 3)
+			break;
 
 		pl2->read_move(this, s);
 		if (s == "0\n")
@@ -212,6 +216,7 @@ void player::playgame(player* pl2, int n, ground g)
 			write(*(pl2->get_sock()), boost::asio::buffer(msg));
 		}
 	}
+	this->after_game(pl2);
 }
 void player::read_move(player* pl, string& s)
 {
@@ -238,6 +243,7 @@ void player::registration()
 	boost::asio::streambuf buff;
 	read_until(sock, buff, "\n");
 	name = buffer_cast<const char*>(buff.data());
+	name.erase(std::remove(name.begin(), name.end(), '\n'), name.end());
 	names.push_back(name);
 }
 string player::choose_opponent()
@@ -282,6 +288,33 @@ bool player::accept_or_reject(bool ans)
 	{
 		write(sock, boost::asio::buffer("0\n"));
 		return false;
+	}
+}
+void player::after_game(player*pl2)
+{
+	//boost::asio::streambuf buff;
+	//read_until(sock, buff, "\n");
+	//string choice= buffer_cast<const char*>(buff.data());
+	//if (choice == "2\n")
+	this->chat(pl2);
+}
+void player::chat(player* pl2)
+{
+	thread t1(&player::chat_transition,this, this, pl2);
+	thread t2(&player::chat_transition,this, pl2, this);
+	t1.join();
+	t2.join();
+}
+void player::chat_transition(player* p1, player* p2)
+{
+	while (true) {
+		boost::asio::streambuf buff;
+		read_until(*(p1->get_sock()), buff, "\n");
+
+		string recieve = buffer_cast<const char*>(buff.data());
+		string send = p1->get_name() + " : " + recieve + "\n";
+		cout << send;
+		write(*(p2->get_sock()), boost::asio::buffer(send));
 	}
 }
 //main function
