@@ -17,41 +17,48 @@ class ground
 {
 public:
 	ground(int n);
+
+	int get_block(int i) { return blocks[i]; }
+	int get_cnt() { return cntblocks; }
+	int get_time(int i) { return time[i]; }
+
 	void show_ground(int n);
 	void show_ground_timer(int n, int& flag);
 	void update_ground(int numblock, int who);
 	void displayClock(int min, int sec);
-	int get_block(int i) { return blocks[i]; }
-	int get_cnt() { return cntblocks; }
-	int get_time(int i) { return time[i]; }
 	int correct_block();
 private:
-	vector<int> blocks;
-	int cntblocks;
-	int time[2];
 	void show_ground1();
 	void show_ground2();
 	void show_ground3();
+
+	vector<int> blocks;
+	int cntblocks;
+	int time[2];
 };
 //player class
 class player
 {
 public:
 	player(io_service& io_service);
-	void playgame(ground gr, int i);
-	void write_move(ground& gr, int& flag);
-	void read_move(ground& gr, int i);
-	int start_game();
-	void show_result(int n);
-	void registeration();
+
 	tcp::socket* get_sock();
+
+	void playgame(ground gr, int i);
+	int start_game();
+	void registeration();
 	void choose_opponent();
 	bool accept_or_reject();
-	void chat();
+private:
+	void write_move(ground& gr, int& flag);
+	void read_move(ground& gr, int i);
+	void show_all_grounds();
+	void show_result(int n);
 	void after_game();
+	void chat();
 	void receiveFrom();
 	void sendTo();
-private:
+
 	tcp::socket sock;
 	int playernum;
 	string name;
@@ -127,15 +134,15 @@ void ground::show_ground1()
 			showground.push_back(to_string(blocks[i]));
 	}
 	cout << endl << endl;
-	cout << "     |     |     " << endl;
-	cout << "  " << left << showground[0] << "  |  " << showground[1] << "  |  " << showground[2] << endl;
-	cout << "_____|_____|_____" << endl;
-	cout << "     |     |     " << endl;
-	cout << "  " << showground[3] << "  |  " << showground[4] << "  |  " << showground[5] << endl;
-	cout << "_____|_____|_____" << endl;
-	cout << "     |     |     " << endl;
-	cout << "  " << showground[6] << "  |  " << showground[7] << "  |  " << showground[8] << endl;
-	cout << "     |     |     " << endl << endl;
+	cout << "  " << showground[0] << " _____ " << showground[1] << " _____ " << showground[2] << endl;
+	cout << "  |       |       |" << endl;
+	cout << "  |       |       |" << endl;
+	cout << "  |       |       |" << endl;
+	cout << "  " << showground[3] << " _____ " << showground[4] << " _____ " << showground[5] << endl;
+	cout << "  |       |       |" << endl;
+	cout << "  |       |       |" << endl;
+	cout << "  |       |       |" << endl;
+	cout << "  " << showground[6] << " _____ " << showground[7] << " _____ " << showground[8] << endl;
 }
 void ground::show_ground2()
 {
@@ -177,14 +184,14 @@ void ground::show_ground3()
 
 	cout << endl;
 	cout <<
-		showground[0] << "____________" << showground[1] << "____________" << showground[2] << endl
+		showground[0] << " __________ " << showground[1] << " __________ " << showground[2] << endl
 		<< "| \\          |          / |" << endl
-		<< "|   " << showground[3] << "________" << showground[4] << "________" << showground[5] << "   |" << endl
+		<< "|   " << showground[3] << " ______ " << showground[4] << " ______ " << showground[5] << "   |" << endl
 		<< "|   | \\      |      / |   |" << endl
-		<< "|   |   " << showground[6] << "____" << showground[7] << "____" << showground[8] << "   |   |" << endl
+		<< "|   |   " << showground[6] << " __ " << showground[7] << " __ " << showground[8] << "   |   |" << endl
 		<< "|   |   |         |   |   |" << endl
 		<< "|   |   |         |   |   |" << endl
-		<< showground[9] << "___" << setw(2) << showground[10] << "__" << setw(2) << showground[11] << "       " << showground[12] << "___" << showground[13] << "___" << showground[14] << endl
+		<< showground[9] << "__" << setw(2) << showground[10] << "__" << setw(2) << showground[11] << "        " << showground[12] << "__" << showground[13] << "__" << showground[14] << endl
 		<< "|   |   |         |   |   |" << endl
 		<< "|   |   |         |   |   |" << endl
 		<< "|   |   " << showground[15] << "___" << showground[16] << "___" << showground[17] << "  |   |" << endl
@@ -308,15 +315,16 @@ int player::start_game()
 {
 
 	system("cls");
-	if (playernum==1)
+	if (playernum == 1)
 	{
-		cout << "you are the first player! choose the ground :)(enter its number).\n>>";
+		cout << "you are the first player! choose the ground :)(enter its number)." << endl << endl << endl;
+		show_all_grounds();
 		int num = correct_input(1, 3);
 		string msg = to_string(num) + "\n";
 		write(sock, boost::asio::buffer(msg));
 		return num;
 	}
-	else if (playernum==2)
+	else if (playernum == 2)
 	{
 		cout << "you 're the second player.your opponent chose ground :" << endl;
 		boost::asio::streambuf buff2;
@@ -326,7 +334,23 @@ int player::start_game()
 	}
 
 }
-
+void player::show_all_grounds()
+{
+	cout << "  O_______O_______O            O_______O_______O            O_______O_______O" << endl;
+	cout << "  |       |       |            |       |       |            | \\     |     / |" << endl;
+	cout << "  |       |       |            |       |       |            |  O____O____O  |" << endl;
+	cout << "  |       |       |            |   O___O___O   |            |  |\\   |   /|  |" << endl;
+	cout << "  |       |       |            |   |       |   |            |  | O__O__O |  |" << endl;
+	cout << "  |       |       |            |   |       |   |            |  | |     | |  |" << endl;
+	cout << "  O_______O_______O            O___O       O___O            O__O_O     O_O__O" << endl;
+	cout << "  |       |       |            |   |       |   |            |  | |     | |  |" << endl;
+	cout << "  |       |       |            |   |       |   |            |  | O__O__O |  |" << endl;
+	cout << "  |       |       |            |   O___O___O   |            |  |/   |   \\|  |" << endl;
+	cout << "  |       |       |            |       |       |            |  O____O____O  |" << endl;
+	cout << "  |       |       |            |       |       |            | /     |     \\ |" << endl;
+	cout << "  O_______O_______O            O_______O_______O            O_______O_______O" << endl << endl;
+	cout << "         (1)                          (2)                          (3)          " << endl << endl;
+}
 void player::show_result(int state)
 {
 	if (state == playernum)
@@ -341,7 +365,7 @@ void player::registeration()
 {
 	cout << "Hi! what's your name? >>";
 	getline(cin, name);
-	write(sock, boost::asio::buffer(name+"\n"));
+	write(sock, boost::asio::buffer(name + "\n"));
 	cout << "registration completed.:)" << endl;
 
 }
@@ -354,17 +378,17 @@ void player::choose_opponent()
 	{
 		//show options
 		playernum = 2;
-		cout << "choose your opponent :(enter their name)"<<endl;
+		cout << "choose your opponent :(enter their name)" << endl;
 		boost::asio::streambuf buff;
 		read_until(sock, buff, "\n");
 		string opp_name = buffer_cast<const char*>(buff.data());
-		cout <<"   "<< opp_name;
+		cout << "   " << opp_name;
 
 		//choose opponent
 		string msg;
 		getline(cin, msg);
 		write(sock, boost::asio::buffer(msg + "\n"));
-		cout << "pending..."<<endl;
+		cout << "pending..." << endl;
 
 	}
 	else if (s == "one\n")
@@ -374,14 +398,14 @@ void player::choose_opponent()
 		boost::asio::streambuf buff;
 		read_until(sock, buff, "\n");
 		string s = buffer_cast<const char*>(buff.data());
-		s.erase(std::remove(s.begin(), s.end(), '\n'),s.end());
-		cout << s << " wants to play."<<endl;
+		s.erase(std::remove(s.begin(), s.end(), '\n'), s.end());
+		cout << s << " wants to play." << endl;
 		cout << "1-Accept" << endl << "2-Decline" << endl;
 		//accept or decline
 		int m = correct_input(1, 2);
-		string msg=to_string(m);
+		string msg = to_string(m);
 		write(sock, boost::asio::buffer(msg + "\n"));
-		
+
 	}
 }
 bool player::accept_or_reject()
@@ -402,7 +426,7 @@ void player::after_game()
 	//inja ehtemalan bayad player1 baraye chat va rematch request befreste:))
 	chat();
 
-	
+
 }
 void player::chat()
 {
@@ -422,7 +446,7 @@ void player::receiveFrom()
 	while (1) {
 		boost::asio::streambuf buff;
 		read_until(sock, buff, "\n");
-		cout <<buffer_cast<const char*>(buff.data());
+		cout << buffer_cast<const char*>(buff.data());
 	}
 }
 
@@ -443,6 +467,7 @@ int correct_input(int min, int max)
 	int num;
 	char* ptr;
 	do {
+		cout << ">> ";
 		getline(cin, msg);
 		msg += "\n";
 		num = strtol(msg.c_str(), &ptr, 10);
@@ -463,7 +488,7 @@ int main()
 	player pl(io);
 	pl.registeration();
 	pl.choose_opponent();
-	bool ans=pl.accept_or_reject();
+	bool ans = pl.accept_or_reject();
 	if (ans)
 	{
 		int i = pl.start_game();
@@ -473,7 +498,7 @@ int main()
 	}
 	else
 	{
-		cout << "felan khodahafezzzz"<<endl;
+		cout << "felan khodahafezzzz" << endl;
 		exit(0);
 	}
 }
