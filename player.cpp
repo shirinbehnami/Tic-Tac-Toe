@@ -49,6 +49,7 @@ public:
 	void registeration();
 	void choose_opponent();
 	bool accept_or_reject();
+	void goodbye();
 private:
 	void write_move(ground& gr, int& flag);
 	void read_move(ground& gr, int i);
@@ -58,6 +59,7 @@ private:
 	void chat();
 	void receiveFrom();
 	void sendTo();
+	void rematch();
 
 	tcp::socket sock;
 	int playernum;
@@ -303,6 +305,7 @@ void player::read_move(ground& gr, int n)
 	}
 	if (state != 3)
 	{
+		system("cls");
 		gr.show_ground(n);
 		this->show_result(state);
 	}
@@ -420,12 +423,63 @@ bool player::accept_or_reject()
 }
 void player::after_game()
 {
-	//int x;
-	//cout << "\n\n\n";
-	//cout << "1-Rematch" << endl << "2-Chat" << endl << "3-Exit" << endl;
-	//inja ehtemalan bayad player1 baraye chat va rematch request befreste:))
-	chat();
+	if (playernum == 1)
+	{
+		cout << "\n";
+		cout << "1-Rematch" << endl << "2-Chat" << endl << "3-Exit" << endl;
+		int x = correct_input(1, 3);
+		string choice = to_string(x) + "\n";
+		write(sock, boost::asio::buffer(choice));
+		cout << "pending..." << endl;
+		if (x == 3)
+			goodbye();
+		else
+		{
+			//Received answer 
+			boost::asio::streambuf buff;
+			read_until(sock, buff, "\n");
+			string answer = buffer_cast<const char*>(buff.data());
+			if (choice == "1\n" && answer == "1\n")
+				rematch();
+			else if (choice == "2\n" && answer == "1\n")
+				chat();
+			else
+				goodbye();
+		}
+	}
+	else
+	{
+		boost::asio::streambuf buff;
+		read_until(sock, buff, "\n");
+		string choice = buffer_cast<const char*>(buff.data());
 
+		string answer;
+
+		if (choice == "1\n")
+		{
+			cout << "Your opponent wants to play again." << endl;
+			cout << "1-Accept" << endl << "2-Decline" << endl;
+			int x = correct_input(1, 2);
+			answer = to_string(x) + "\n";
+			write(sock, boost::asio::buffer(answer));
+		}
+		else if (choice == "2\n")
+		{
+			cout << "Your opponent wants to chat." << endl;
+			cout << "1-Accept" << endl << "2-Decline" << endl;
+			int x = correct_input(1, 2);
+			answer = to_string(x) + "\n";
+			write(sock, boost::asio::buffer(answer));
+		}
+
+
+		if (choice == "1\n" && answer == "1\n")
+			rematch();
+		else if (choice == "2\n" && answer == "1\n")
+			chat();
+		else
+			goodbye();
+	}
 
 }
 void player::chat()
@@ -449,7 +503,6 @@ void player::receiveFrom()
 		cout << buffer_cast<const char*>(buff.data());
 	}
 }
-
 void player::sendTo()
 {
 	while (1) {
@@ -460,6 +513,22 @@ void player::sendTo()
 		cout << endl;
 	}
 }
+void player::goodbye()
+{
+	cout << "felan khodahafezzzz" << endl;
+	exit(0);
+}
+void player::rematch()
+{
+	//change playernum
+	playernum = (playernum == 1) ? 2 : 1;
+	//restart the game
+	int i = start_game();
+	ground gr(i);
+	gr.show_ground(i);
+	playgame(gr, i);
+}
+
 int correct_input(int min, int max)
 {
 	bool is_correct = false;
@@ -498,7 +567,6 @@ int main()
 	}
 	else
 	{
-		cout << "felan khodahafezzzz" << endl;
-		exit(0);
+		pl.goodbye();
 	}
 }

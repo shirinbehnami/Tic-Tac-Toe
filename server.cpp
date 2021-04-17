@@ -156,7 +156,7 @@ public:
 	void after_game(player* pl2);
 	void chat_transition(player* p1, player* p2);
 	void chat(player* pl2);
-
+	void rematch(player* pl1, player* pl2);
 
 private:
 	string name;
@@ -252,11 +252,11 @@ string player::choose_opponent()
 	s += "\n";
 	write(sock, boost::asio::buffer(s));
 	string msg;
-	for(int i=0;i<names.size();i++)
+	for (int i = 0; i < names.size(); i++)
 		if (names[i] != name)
 			msg += names[i];
-	write(sock, boost::asio::buffer(msg+"\n"));
-	
+	write(sock, boost::asio::buffer(msg + "\n"));
+
 
 	boost::asio::streambuf buff;
 	read_until(sock, buff, "\n");
@@ -268,10 +268,10 @@ bool player::send_req(string opp)
 	string s = "one";
 	s += "\n";
 	write(sock, boost::asio::buffer(s));
-	write(sock, boost::asio::buffer(opp+"\n"));
+	write(sock, boost::asio::buffer(opp + "\n"));
 	boost::asio::streambuf buff;
 	read_until(sock, buff, "\n");
-	string answer= buffer_cast<const char*>(buff.data());
+	string answer = buffer_cast<const char*>(buff.data());
 	if (answer == "1\n")
 		return true;
 	else
@@ -290,18 +290,40 @@ bool player::accept_or_reject(bool ans)
 		return false;
 	}
 }
-void player::after_game(player*pl2)
+void player::after_game(player* pl2)
 {
-	//boost::asio::streambuf buff;
-	//read_until(sock, buff, "\n");
-	//string choice= buffer_cast<const char*>(buff.data());
-	//if (choice == "2\n")
-	this->chat(pl2);
+	// Received request of player1
+	boost::asio::streambuf buff;
+	read_until(this->sock, buff, "\n");
+	string choice = buffer_cast<const char*>(buff.data());
+
+	//send request to player2
+	write(*(pl2->get_sock()), boost::asio::buffer(choice));
+
+	if (choice != "3\n")
+	{
+		//Received answer of player2
+		boost::asio::streambuf buff;
+		read_until(*(pl2->get_sock()), buff, "\n");
+		string answer = buffer_cast<const char*>(buff.data());
+
+		//send answer to player1
+		write(this->sock, boost::asio::buffer(answer));
+
+		if (choice == "1\n" && answer == "1\n")
+			rematch(pl2, this);
+		else if (choice == "2\n" && answer == "1\n")
+			this->chat(pl2);
+		else
+			exit(0);
+	}
+	else
+		exit(0);
 }
 void player::chat(player* pl2)
 {
-	thread t1(&player::chat_transition,this, this, pl2);
-	thread t2(&player::chat_transition,this, pl2, this);
+	thread t1(&player::chat_transition, this, this, pl2);
+	thread t2(&player::chat_transition, this, pl2, this);
 	t1.join();
 	t2.join();
 }
@@ -317,6 +339,13 @@ void player::chat_transition(player* p1, player* p2)
 		write(*(p2->get_sock()), boost::asio::buffer(send));
 	}
 }
+void player::rematch(player* pl1, player* pl2)
+{
+	int num_of_ground = pl1->choose_ground();
+	ground g(num_of_ground);
+	pl2->inform_chosen_ground(num_of_ground);
+	pl1->playgame(pl2, num_of_ground, g);
+}
 //main function
 int main()
 {
@@ -326,13 +355,13 @@ int main()
 	pl1.registration();
 	player pl2(io, acc);
 	pl2.registration();
-	string opp=pl2.choose_opponent();
+	string opp = pl2.choose_opponent();
 	//inja ye tabe find ham mikhaim ke farz mikonim darim.
-	
-	bool answer=pl1.send_req(pl2.get_name());
+
+	bool answer = pl1.send_req(pl2.get_name());
 	pl1.accept_or_reject(answer);
 	pl2.accept_or_reject(answer);
-	
+
 	if (answer == true)
 	{
 		int num_of_ground = pl1.choose_ground();
