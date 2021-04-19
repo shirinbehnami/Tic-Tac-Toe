@@ -5,12 +5,14 @@
 #include <vector>
 #include <iomanip>
 #include<thread>
+#include <conio.h>
 #include <string>
 using namespace std;
 using namespace boost::asio;
 using namespace ip;
 //general functions
 int correct_input(int min, int max);
+int correct_input(int min, int max, char input[]);
 
 //ground class
 class ground
@@ -23,10 +25,10 @@ public:
 	int get_time(int i) { return time[i]; }
 
 	void show_ground(int n);
-	void show_ground_timer(int n, int& flag);
+	void show_ground_timer(int n, int& flag, char input_num[]);
 	void update_ground(int numblock, int who);
 	void displayClock(int min, int sec);
-	int correct_block();
+	int correct_block(char input_num[]);
 private:
 	void show_ground1();
 	void show_ground2();
@@ -51,7 +53,7 @@ public:
 	bool accept_or_reject();
 	void goodbye();
 private:
-	void write_move(ground& gr, int& flag);
+	void write_move(ground& gr, int& flag, char input_num[]);
 	void read_move(ground& gr, int i);
 	void show_all_grounds();
 	void show_result(int n);
@@ -104,12 +106,13 @@ void ground::show_ground(int n)
 		break;
 	}
 }
-void ground::show_ground_timer(int n, int& flag)
+void ground::show_ground_timer(int n, int& flag, char input_num[])
 {
 	do
 	{
 		displayClock(time[0], time[1]);
 		this->show_ground(n);
+		cout << input_num;
 		Sleep(1000);
 		time[1]--;
 		if (time[1] < 0) {
@@ -219,12 +222,12 @@ void ground::update_ground(int numblock, int who)
 {
 	blocks[numblock] = who;
 }
-int ground::correct_block()
+int ground::correct_block(char input_num[])
 {
 	bool is_correct = false;
 	int num;
 	do {
-		num = correct_input(1, cntblocks);
+		num = correct_input(1, cntblocks, input_num);
 		if (blocks[num - 1] == -1 || blocks[num - 1] == -2)
 			cout << "this block is full.try another one." << endl;
 		else
@@ -253,8 +256,10 @@ void player::playgame(ground gr, int i)
 			whilecnt = true;
 
 		int flag = 1;
-		thread t1(&player::write_move, this, ref(gr), ref(flag));
-		gr.show_ground_timer(i, ref(flag));
+		char input_num[1000];
+		input_num[0] = '\0';
+		thread t1(&player::write_move, this, ref(gr), ref(flag), input_num);
+		gr.show_ground_timer(i, ref(flag), input_num);
 		if (flag == -1)
 		{
 			cout << "Your time is up" << endl;
@@ -271,9 +276,9 @@ void player::playgame(ground gr, int i)
 		}
 	}
 }
-void player::write_move(ground& gr, int& flag)
+void player::write_move(ground& gr, int& flag, char input_num[])
 {
-	int num = gr.correct_block();
+	int num = gr.correct_block(input_num);
 	string msg = to_string(num) + "\n";
 	flag = 0;
 	gr.update_ground(num - 1, -1 * (playernum));
@@ -541,6 +546,49 @@ int correct_input(int min, int max)
 		msg += "\n";
 		num = strtol(msg.c_str(), &ptr, 10);
 		if (num == 0)
+			cout << "invalid input.try again" << endl;
+		else if (num<min || num>max)
+			cout << "out of range.try again" << endl;
+		else
+			is_correct = true;
+
+	} while (!is_correct);
+	return num;
+}
+int correct_input(int min, int max, char input[])
+{
+	bool is_correct = false;
+	int num, cnt = 0;
+	do {
+		cout << ">> ";
+		while (1)
+		{
+			char c = _getch();
+			input[cnt] = c;
+			input[cnt + 1] = '\0';
+			if (input[cnt] == '\b')
+			{
+				cout << "\b \b";
+				if (cnt != 0)
+				{
+					cnt--;
+					input[cnt] = '\0';
+				}
+			}
+			else if (input[cnt] != '\r')
+			{
+				cout << input[cnt];
+				cnt++;
+			}
+			else
+			{
+				cnt++;
+				break;
+			}
+		}
+		input[cnt - 1] = '\0';
+		num = atoi(input);
+		if (num == 0 && input[0] != '0')
 			cout << "invalid input.try again" << endl;
 		else if (num<min || num>max)
 			cout << "out of range.try again" << endl;
