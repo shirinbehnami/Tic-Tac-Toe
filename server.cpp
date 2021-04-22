@@ -1,27 +1,32 @@
 //server
-// player1:O,-1    player2:x,-2
+
 #include <iostream>
 #include <boost/asio.hpp>
 #include <vector>
 #include <cstdlib>
 #include <thread>
+
 using namespace std;
 using namespace boost::asio;
 using namespace ip;
-//ground class
+
 class ground
 {
 public:
+
 	ground(int n);
+
 	void update_ground(int numblock, int who);
 	int judge(int n);
 private:
-	vector<int> blocks;
-	int cntblocks;
 	int judge1();
 	int judge2();
 	int judge3();
+
+	vector<int> blocks;
+	int cntblocks;
 };
+
 ground::ground(int n)
 {
 	switch (n) {
@@ -39,11 +44,11 @@ ground::ground(int n)
 	for (int i = 0; i < cntblocks; i++)
 		blocks.push_back(i + 1);
 }
+
 void ground::update_ground(int numblock, int who)
 {
 	blocks[numblock] = who;
 }
-
 
 //if first player wins,return 1.
 //if second player wins,return 2.
@@ -143,101 +148,45 @@ class player
 {
 public:
 	player(io_service& io_service, tcp::acceptor& acc);
-	void playgame(player* pl2, int n, ground g);
-	void read_move(player* pl, string& s);
+
 	tcp::socket* get_sock();
-	int choose_ground();
-	void inform_chosen_ground(int n);
+	string get_name() { return name; };
+
 	void registration();
 	string choose_opponent();
 	bool send_req(string opp);
-	string get_name() { return name; };
 	bool accept_or_reject(bool ans);
-	void after_game(player* pl2);
-	void chat_transition(player* p1, player* p2);
-	void chat(player* pl2);
-	void rematch(player* pl1, player* pl2);
+	int choose_ground();
+	void inform_chosen_ground(int n);
+	void playgame(player* pl2, int n, ground g);
 
 private:
+	void read_move(player* pl, string& s);
+	void after_game(player* pl2);
+	void receive_ans(player* pl, player* flag);
+	void rematch(player* pl1, player* pl2);
+	void chat(player* pl2);
+	void chat_transition(player* p1, player* p2);
+
 	string name;
 	tcp::socket sock;
 	static vector<string> names;
 };
+
 //initialize
 vector<string>player::names{};
+
 player::player(io_service& io_service, tcp::acceptor& acc)
 	:sock(io_service)
 {
 	acc.accept(sock);
 }
+
 tcp::socket* player::get_sock()
 {
 	return &sock;
 }
-void player::playgame(player* pl2, int n, ground g)
-{
-	string s;
-	string msg;
-	int i = 3;
-	while (i == 3)
-	{
-		this->read_move(pl2, s);
-		if (s == "0\n")
-			i = 2;
-		else
-		{
-			g.update_ground(atoi(s.c_str()) - 1, -1);
-			i = g.judge(n);
-		}
-		msg = s + '-' + to_string(i);
-		write(*(pl2->get_sock()), boost::asio::buffer(msg));
-		if (i != 3)
-		{
-			msg = s + '-' + to_string(i);
-			write(sock, boost::asio::buffer(msg));
-		}
 
-		if (i != 3)
-			break;
-
-		pl2->read_move(this, s);
-		if (s == "0\n")
-			i = 1;
-		else
-		{
-			g.update_ground(atoi(s.c_str()) - 1, -2);
-			i = g.judge(n);
-		}
-		msg = s + '-' + to_string(i);
-		write(sock, boost::asio::buffer(msg));
-		if (i != 3)
-		{
-			msg = s + '-' + to_string(i);
-			write(*(pl2->get_sock()), boost::asio::buffer(msg));
-		}
-	}
-	this->after_game(pl2);
-}
-void player::read_move(player* pl, string& s)
-{
-	boost::asio::streambuf buff;
-	read_until(sock, buff, "\n");
-	s = buffer_cast<const char*>(buff.data());
-}
-int player::choose_ground()
-{
-	boost::asio::streambuf buff;
-	read_until(sock, buff, "\n");
-	string num = buffer_cast<const char*>(buff.data());
-	return atoi(num.c_str());
-}
-void player::inform_chosen_ground(int n)
-{
-
-	string s = to_string(n);
-	s += "\n";
-	write(sock, boost::asio::buffer(s));
-}
 void player::registration()
 {
 	boost::asio::streambuf buff;
@@ -290,35 +239,126 @@ bool player::accept_or_reject(bool ans)
 		return false;
 	}
 }
+int player::choose_ground()
+{
+	boost::asio::streambuf buff;
+	read_until(sock, buff, "\n");
+	string num = buffer_cast<const char*>(buff.data());
+	return atoi(num.c_str());
+}
+void player::inform_chosen_ground(int n)
+{
+
+	string s = to_string(n);
+	s += "\n";
+	write(sock, boost::asio::buffer(s));
+}
+
+void player::playgame(player* pl2, int n, ground g)
+{
+	string s;
+	string msg;
+	int i = 3;
+	while (i == 3)
+	{
+		this->read_move(pl2, s);
+		if (s == "0\n")
+			i = 2;
+		else
+		{
+			g.update_ground(atoi(s.c_str()) - 1, -1);
+			i = g.judge(n);
+		}
+		msg = s + '-' + to_string(i);
+		write(*(pl2->get_sock()), boost::asio::buffer(msg));
+		if (i != 3)
+		{
+			msg = s + '-' + to_string(i);
+			write(sock, boost::asio::buffer(msg));
+		}
+
+		if (i != 3)
+			break;
+
+		pl2->read_move(this, s);
+		if (s == "0\n")
+			i = 1;
+		else
+		{
+			g.update_ground(atoi(s.c_str()) - 1, -2);
+			i = g.judge(n);
+		}
+		msg = s + '-' + to_string(i);
+		write(sock, boost::asio::buffer(msg));
+		if (i != 3)
+		{
+			msg = s + '-' + to_string(i);
+			write(*(pl2->get_sock()), boost::asio::buffer(msg));
+		}
+	}
+	this->after_game(pl2);
+}
+void player::read_move(player* pl, string& s)
+{
+	boost::asio::streambuf buff;
+	read_until(sock, buff, "\n");
+	s = buffer_cast<const char*>(buff.data());
+}
+
 void player::after_game(player* pl2)
+{
+	player* flag = NULL;
+	thread t1(&player::receive_ans, this, pl2, ref(flag));
+	thread t2(&player::receive_ans, pl2, this, ref(flag));
+	while (flag == 0);
+	if (flag == this)
+	{
+		t2.detach();
+		t2.~thread();
+	}
+	else
+	{
+		t1.detach();
+		t1.~thread();
+	}
+}
+void player::receive_ans(player* pl, player* flag)
 {
 	// Received request of player1
 	boost::asio::streambuf buff;
 	read_until(this->sock, buff, "\n");
+	flag = this;
 	string choice = buffer_cast<const char*>(buff.data());
 
 	//send request to player2
-	write(*(pl2->get_sock()), boost::asio::buffer(choice));
+	write(*(pl->get_sock()), boost::asio::buffer(choice));
 
 	if (choice != "3\n")
 	{
 		//Received answer of player2
 		boost::asio::streambuf buff;
-		read_until(*(pl2->get_sock()), buff, "\n");
+		read_until(*(pl->get_sock()), buff, "\n");
 		string answer = buffer_cast<const char*>(buff.data());
 
 		//send answer to player1
 		write(this->sock, boost::asio::buffer(answer));
 
 		if (choice == "1\n" && answer == "1\n")
-			rematch(pl2, this);
+			rematch(pl, this);
 		else if (choice == "2\n" && answer == "1\n")
-			this->chat(pl2);
+			this->chat(pl);
 		else
 			exit(0);
 	}
 	else
 		exit(0);
+}
+void player::rematch(player* pl1, player* pl2)
+{
+	int num_of_ground = pl1->choose_ground();
+	ground g(num_of_ground);
+	pl2->inform_chosen_ground(num_of_ground);
+	pl1->playgame(pl2, num_of_ground, g);
 }
 void player::chat(player* pl2)
 {
@@ -339,13 +379,7 @@ void player::chat_transition(player* p1, player* p2)
 		write(*(p2->get_sock()), boost::asio::buffer(send));
 	}
 }
-void player::rematch(player* pl1, player* pl2)
-{
-	int num_of_ground = pl1->choose_ground();
-	ground g(num_of_ground);
-	pl2->inform_chosen_ground(num_of_ground);
-	pl1->playgame(pl2, num_of_ground, g);
-}
+
 //main function
 int main()
 {
