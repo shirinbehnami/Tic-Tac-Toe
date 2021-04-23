@@ -315,27 +315,30 @@ void player::after_game(player* pl2)
 	{
 		t2.detach();
 		t2.~thread();
+		t1.join();
 	}
 	else
 	{
 		t1.detach();
 		t1.~thread();
+		t2.join();
 	}
 }
 void player::receive_ans(player* pl, player* flag)
 {
-	// Received request of player1
+	// Receive request of player1
 	boost::asio::streambuf buff;
 	read_until(this->sock, buff, "\n");
 	flag = this;
 	string choice = buffer_cast<const char*>(buff.data());
+	write(this->sock, boost::asio::buffer("welcome:)\n"));
 
 	//send request to player2
 	write(*(pl->get_sock()), boost::asio::buffer(choice));
 
 	if (choice != "3\n")
 	{
-		//Received answer of player2
+		//Receive answer of player2
 		boost::asio::streambuf buff;
 		read_until(*(pl->get_sock()), buff, "\n");
 		string answer = buffer_cast<const char*>(buff.data());
@@ -362,10 +365,10 @@ void player::rematch(player* pl1, player* pl2)
 }
 void player::chat(player* pl2)
 {
-	thread t1(&player::chat_transition, this, this, pl2);
-	thread t2(&player::chat_transition, this, pl2, this);
-	t1.join();
-	t2.join();
+	thread t3(&player::chat_transition, this, this, pl2);
+	thread t4(&player::chat_transition, this, pl2, this);
+	t3.join();
+	t4.join();
 }
 void player::chat_transition(player* p1, player* p2)
 {

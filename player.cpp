@@ -70,12 +70,13 @@ private:
 	void show_all_grounds();
 	void show_result(int n);
 	void after_game();
-	void send_ans(int& flag);
-	void receive_ans(int& flag);
+	void send_ans(int& flag, string& choice);
+	void receive_ans(int& flag, string& choice);
 	void chat();
 	void receiveFrom();
 	void sendTo();
 	void rematch();
+	void options_after_game(string choice);
 
 	tcp::socket sock;
 	int playernum;
@@ -501,83 +502,87 @@ void player::show_result(int state)
 
 void player::after_game()
 {
+	string choice;
 	int flag = 0;
-	thread t1(&player::receive_ans, this, ref(flag));
-	thread t2(&player::send_ans, this, ref(flag));
+	thread t1(&player::receive_ans, this, ref(flag),ref(choice));
+	thread t2(&player::send_ans, this, ref(flag),ref(choice));
 	while (flag == 0);
-	if (flag == 1)
-	{
-		t2.detach();
-		t2.~thread();
-	}
-	else
-	{
-		t1.detach();
-		t1.~thread();
-	}
+	t1.detach();
+	t1.~thread();
+	t2.join();
+
+
 }
-void player::send_ans(int& flag)
+void player::send_ans(int& flag ,string& choice)
 {
+	string ans;
 	SetColorAndBackground(2, 0);
 	cout << "\n";
 	cout << "1-Rematch" << endl << "2-Chat" << endl << "3-Exit" << endl;
 	int x = correct_input(1, 3);
-	flag = 2;
-	string choice = to_string(x) + "\n";
-	write(sock, boost::asio::buffer(choice));
-	SetColorAndBackground(2, 0);
-	cout << "pending..." << endl;
-	if (x == 3)
-		goodbye();
-	else
+
+	if (flag == 0)
 	{
-		//Received answer 
-		boost::asio::streambuf buff;
-		read_until(sock, buff, "\n");
-		string answer = buffer_cast<const char*>(buff.data());
-		if (choice == "1\n" && answer == "1\n")
-			rematch();
-		else if (choice == "2\n" && answer == "1\n")
-			chat();
+		choice = to_string(x) + "\n";
+		write(sock, boost::asio::buffer(choice));
+		flag = 2;
+		SetColorAndBackground(2, 0);
+		if (x != 3)
+			cout << "pending..." << endl;
 		else
 			goodbye();
+
 	}
+	if (flag == 1)
+	{
+		ans = to_string(x) + "\n";
+		write(sock, boost::asio::buffer(ans));
+	}
+	if (flag == 2)//who fisrt sent a reqe
+	{
+		bool x = accept_or_reject();
+		if (x == 1)
+			ans = "1\n";
+		else
+			ans = "2\n";
+	}
+
+	if (ans == "1\n")
+	{
+		if (choice == "1\n")
+			rematch();
+		else if (choice == "2\n")
+			chat();
+		else goodbye();
+	}
+	else
+		goodbye();
+
+
+
+
 }
-void player::receive_ans(int& flag)
+void player::receive_ans(int& flag,string& choice)
 {
 	boost::asio::streambuf buff;
 	read_until(sock, buff, "\n");
+	if (flag != 0)
+		return;
 	flag = 1;
-	string choice = buffer_cast<const char*>(buff.data());
-
-	string answer;
-
+	choice = buffer_cast<const char*>(buff.data());
 	if (choice == "1\n")
 	{
 		SetColorAndBackground(2, 0);
 		cout << "Your opponent wants to play again." << endl;
-		cout << "1-Accept" << endl << "2-Decline" << endl;
-		int x = correct_input(1, 2);
-		answer = to_string(x) + "\n";
-		write(sock, boost::asio::buffer(answer));
+
 	}
 	else if (choice == "2\n")
 	{
 		SetColorAndBackground(2, 0);
 		cout << "Your opponent wants to chat." << endl;
-		cout << "1-Accept" << endl << "2-Decline" << endl;
-		int x = correct_input(1, 2);
-		answer = to_string(x) + "\n";
-		write(sock, boost::asio::buffer(answer));
+
 	}
-
-
-	if (choice == "1\n" && answer == "1\n")
-		rematch();
-	else if (choice == "2\n" && answer == "1\n")
-		chat();
-	else
-		goodbye();
+	cout << "1-Accept" << endl << "2-Decline" << endl << "3-exit" << endl;
 }
 void player::rematch()
 {
@@ -597,11 +602,11 @@ void player::chat()
 	cout << "__________________________________________________________" << endl;
 	cout << "|              Welcome to tictactoe chat                 |" << endl;
 	cout << "|________________________________________________________|" << endl;
-	thread t1(&player::sendTo, this);
-	thread t2(&player::receiveFrom, this);
+	thread t3(&player::sendTo, this);
+	thread t4(&player::receiveFrom, this);
 
-	t1.join();
-	t2.join();
+	t3.join();
+	t4.join();
 
 }
 void player::receiveFrom()
