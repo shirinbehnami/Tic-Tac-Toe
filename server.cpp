@@ -50,12 +50,13 @@ void ground::update_ground(int numblock, int who)
 	blocks[numblock] = who;
 }
 
-//if first player wins,return 1.
-//if second player wins,return 2.
-//if draw return 0.
-//otherwise return 3.
 int ground::judge(int n)
 {
+	/*if first player wins,return 1.
+	if second player wins,return 2.
+	if draw return 0.
+	otherwise return 3.*/
+
 	int i = -2;
 	switch (n) {
 	case 1:
@@ -163,7 +164,7 @@ public:
 private:
 	void read_move(player* pl, string& s);
 	void after_game(player* pl2);
-	void receive_ans(player* pl, player* flag);
+	void receive_ans(player* pl, player*& flag);
 	void rematch(player* pl1, player* pl2);
 	void chat(player* pl2);
 	void chat_transition(player* p1, player* p2);
@@ -310,29 +311,37 @@ void player::after_game(player* pl2)
 	player* flag = NULL;
 	thread t1(&player::receive_ans, this, pl2, ref(flag));
 	thread t2(&player::receive_ans, pl2, this, ref(flag));
-	while (flag == 0);
-	if (flag == this)
+	while (1)
 	{
-		t2.detach();
-		t2.~thread();
-		t1.join();
-	}
-	else
-	{
-		t1.detach();
-		t1.~thread();
-		t2.join();
+		if (flag == this)
+		{
+			t2.detach();
+			t2.~thread();
+			t1.join();
+			break;
+		}
+		else if (flag == pl2)
+		{
+			t1.detach();
+			t1.~thread();
+			t2.join();
+			break;
+		}
 	}
 }
-void player::receive_ans(player* pl, player* flag)
+void player::receive_ans(player* pl, player*& flag)
 {
 	// Receive request of player1
 	boost::asio::streambuf buff;
 	read_until(this->sock, buff, "\n");
-	flag = this;
 	string choice = buffer_cast<const char*>(buff.data());
-	write(this->sock, boost::asio::buffer("welcome:)\n"));
-
+	if (flag == NULL)
+	{
+		write(this->sock, boost::asio::buffer("welcome:)\n"));
+		flag = this;
+	}
+	else
+		return;
 	//send request to player2
 	write(*(pl->get_sock()), boost::asio::buffer(choice));
 

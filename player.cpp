@@ -504,8 +504,8 @@ void player::after_game()
 {
 	string choice;
 	int flag = 0;
-	thread t1(&player::receive_ans, this, ref(flag),ref(choice));
-	thread t2(&player::send_ans, this, ref(flag),ref(choice));
+	thread t1(&player::receive_ans, this, ref(flag), ref(choice));
+	thread t2(&player::send_ans, this, ref(flag), ref(choice));
 	while (flag == 0);
 	t1.detach();
 	t1.~thread();
@@ -513,7 +513,7 @@ void player::after_game()
 
 
 }
-void player::send_ans(int& flag ,string& choice)
+void player::send_ans(int& flag, string& choice)
 {
 	string ans;
 	SetColorAndBackground(2, 0);
@@ -536,6 +536,7 @@ void player::send_ans(int& flag ,string& choice)
 	if (flag == 1)
 	{
 		ans = to_string(x) + "\n";
+		write(sock, boost::asio::buffer("NULL\n"));
 		write(sock, boost::asio::buffer(ans));
 	}
 	if (flag == 2)//who fisrt sent a reqe
@@ -562,7 +563,7 @@ void player::send_ans(int& flag ,string& choice)
 
 
 }
-void player::receive_ans(int& flag,string& choice)
+void player::receive_ans(int& flag, string& choice)
 {
 	boost::asio::streambuf buff;
 	read_until(sock, buff, "\n");
@@ -570,17 +571,14 @@ void player::receive_ans(int& flag,string& choice)
 		return;
 	flag = 1;
 	choice = buffer_cast<const char*>(buff.data());
+	SetColorAndBackground(2, 0);
 	if (choice == "1\n")
 	{
-		SetColorAndBackground(2, 0);
 		cout << "Your opponent wants to play again." << endl;
-
 	}
 	else if (choice == "2\n")
 	{
-		SetColorAndBackground(2, 0);
 		cout << "Your opponent wants to chat." << endl;
-
 	}
 	cout << "1-Accept" << endl << "2-Decline" << endl << "3-exit" << endl;
 }
@@ -591,9 +589,9 @@ void player::rematch()
 
 	//restart the game
 	int i = start_game();
-	ground gr(i);
-	gr.show_ground(i);
-	playgame(gr, i);
+	ground g(i);
+	g.show_ground(i);
+	playgame(g, i);
 }
 void player::chat()
 {
@@ -709,11 +707,15 @@ int correct_input(int min, int max, char input[])
 		{
 			SetColorAndBackground(4, 0);
 			cout << "invalid input.try again" << endl;
+			input[0] = '\0';
+			cnt = 0;
 		}
 		else if (num<min || num>max)
 		{
 			SetColorAndBackground(1, 0);
 			cout << "out of range.try again" << endl;
+			input[0] = '\0';
+			cnt = 0;
 		}
 		else
 			is_correct = true;
