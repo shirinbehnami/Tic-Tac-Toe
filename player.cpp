@@ -64,6 +64,12 @@ public:
 	void choose_opponent();
 	bool accept_or_reject();
 	void goodbye();
+
+	//graphics
+	void show_logo();
+	void show_cow();
+	void calc(int i, int j);
+
 private:
 	void write_move(ground& gr, int& flag, char input_num[]);
 	void read_move(ground& gr, int i);
@@ -651,6 +657,89 @@ void player::goodbye()
 	cout << "felan khodahafezzzz" << endl;
 	exit(0);
 }
+//----------------------------------------------------------------------------------
+//graphics
+void player::calc(int i, int j)
+{
+	if (i == 26)
+	{
+		SetColorAndBackground(13, 0);
+		return;
+	}
+
+	if (i == j || i == 9 + j || i == j + 18)
+		SetColorAndBackground(13, 0);
+	else
+		SetColorAndBackground(8, 0);
+}
+void player::show_logo()
+{
+
+	Sleep(2000);
+	for (int i = 0; i < 27; i++)
+	{
+		system("cls");
+		calc(i, 0);
+		cout <<
+			"ooooooooooooooo\n";
+		calc(i, 1);
+		cout <<
+			"o                    welocom to                     \n";
+		calc(i, 2);
+		cout <<
+			"o                     _____  __                     \n";
+		calc(i, 3);
+		cout <<
+			"o                    / _ \\ \\/ /                     \n";
+		calc(i, 4);
+		cout <<
+			"o                   | | | \\  /                      \n";
+		calc(i, 5);
+		cout <<
+			"o                   | |_| /  \\                    o\n";
+		calc(i, 6);
+		cout <<
+			"o                    \\___/_/\\_\\                   o\n";
+		calc(i, 7);
+		cout <<
+			"o                                                 o\n";
+		calc(i, 8);
+		cout <<
+			"ooooooooooooooooooooooooooooooooooooooooooooooooooo\n";
+		show_cow();
+		Sleep(100);
+
+	}
+	Sleep(600);
+}
+void player::show_cow()
+{
+	SetColorAndBackground(8, 0);
+	cout <<
+		"           O                                O\n"
+		"              (      )        o   O                \n"
+		"    o         ~(^^^^)~                             \n"
+		"               ) ^^ \\~_          |\\                \n"
+		"              /     | \\        \\~ /                \n"
+		"             ( 0  0  ) \\        | |                \n"
+		"              ---___/~  \\       | |                \n"
+		"               /'__/ |   ~-_____/ |                \n"
+		"o          _   ~----~      ___---~                 \n"
+		"  O       //     |         |                       \n"
+		"         ((~\\  _|         -|                       \n"
+		"   o  O //-_ \\/ |        ~  |                      \n"
+		"        ^   \\_ /         ~  |                      \n"
+		"               |          ~ |                      \n"
+		"               |     /     ~ |                     \n"
+		"               |     (       |                     \n"
+		"                \\     \\      /\\                    \n"
+		"               / -_____-\\   \\ ~~-*                 \n"
+		"               |  /       \\  \\       .==.          \n"
+		"               / /         / /       |  |          \n"
+		"             /~  |       /~  |       |__|          \n"
+		"             ~~~~        ~~~~                      \n";
+
+}
 
 //---------------------------------------------------------------------------
 //other function
@@ -745,6 +834,7 @@ int main()
 {
 	io_service io;
 	player pl(io);
+	pl.show_logo();
 	pl.registeration();
 	pl.choose_opponent();
 	bool ans = pl.accept_or_reject();
