@@ -208,20 +208,18 @@ string player::choose_opponent()
 	s += "\n";
 	write(sock, boost::asio::buffer(s));
 
-	string cnt = to_string(names.size() - 1);
-	cnt += "\n";
-	write(sock, boost::asio::buffer(cnt));
-	Sleep(1);
+	//not important
+	boost::asio::streambuf buff;
+	read_until(sock, buff, "\n");
 
 	string msg;
 	for (int i = 0; i < names.size(); i++)
 		if (names[i] != name)
-			msg += (names[i] + "\n");
-	write(sock, boost::asio::buffer(msg));
+			msg += names[i];
+	write(sock, boost::asio::buffer(msg + '\n'));
 
-
-	boost::asio::streambuf buff;
-	read_until(sock, buff, "\n");
+	boost::asio::streambuf buff1;
+	read_until(sock, buff1, "\n");
 	string opp = buffer_cast<const char*>(buff.data());
 	return opp;
 }

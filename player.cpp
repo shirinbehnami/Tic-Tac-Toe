@@ -23,7 +23,10 @@ void SetColorAndBackground(int ForgC, int BackC)
 //general functions
 int correct_input(int min, int max);
 int correct_input(int min, int max, char input[]);
-
+//general function-morse
+void hello();
+void bye();
+void the_end();
 //ground class
 class ground
 {
@@ -319,34 +322,26 @@ void player::choose_opponent()
 	boost::asio::streambuf buff;
 	read_until(sock, buff, "\n");
 	string s = buffer_cast<const char*>(buff.data());
+
 	if (s == "two\n")
 	{
+		write(sock, boost::asio::buffer("null\n"));
 
 		//show options
 		playernum = 2;
 		SetColorAndBackground(2, 0);
 		cout << "choose your opponent :(enter their name)" << endl;
+
 		boost::asio::streambuf buff;
-
 		read_until(sock, buff, "\n");
-		string s = buffer_cast<const char*>(buff.data());
-		int cnt = atoi(s.c_str());
-
-		vector<string> names;
-		for (int i = 0; i < cnt; i++)
-		{
-			boost::asio::streambuf buff;
-			read_until(sock, buff, "\n");
-			string opp_name = buffer_cast<const char*>(buff.data());
-			opp_name.erase(std::remove(opp_name.begin(), opp_name.end(), '\n'), opp_name.end());
-			cout << "   " << opp_name << endl;
-			transform(opp_name.begin(), opp_name.end(), opp_name.begin(), ::tolower);
-			names.push_back(opp_name);
-		}
+		string opp_name = buffer_cast<const char*>(buff.data());
+		opp_name.erase(std::remove(opp_name.begin(), opp_name.end(), '\n'), opp_name.end());
+		cout << "   " << opp_name << endl;
+		transform(opp_name.begin(), opp_name.end(), opp_name.begin(), ::tolower);
 
 		//choose opponent
 		string msg;
-		while (find(names.begin(), names.end(), msg) == names.end())
+		while (msg != opp_name)
 		{
 			SetColorAndBackground(2, 0);
 			cout << ">>";
@@ -354,7 +349,7 @@ void player::choose_opponent()
 			getline(cin, msg);
 			transform(msg.begin(), msg.end(), msg.begin(), ::tolower);
 
-			if (find(names.begin(), names.end(), msg) == names.end())
+			if (msg != opp_name)
 			{
 				SetColorAndBackground(4, 0);
 				cout << "invalid input.try again" << endl;
@@ -509,12 +504,22 @@ void player::show_result(int state)
 		SetColorAndBackground(6, 0);
 		if (!are_connected)
 			cout << "your opponent left the game.so..." << endl;
+
 		if (state == playernum)
+		{
 			cout << "congrajulations! you wiiiiiiin!" << endl;
+			the_end();
+		}
 		else if (state == 0)
+		{
 			cout << "Draw!" << endl;
+			the_end();
+		}
 		else
+		{
 			cout << "Game over:(" << endl;
+			the_end();
+		}
 		if (are_connected)
 			after_game();
 		else
@@ -655,6 +660,7 @@ void player::goodbye()
 {
 	SetColorAndBackground(2, 0);
 	cout << "felan khodahafezzzz" << endl;
+	bye();
 	exit(0);
 }
 //----------------------------------------------------------------------------------
@@ -710,6 +716,7 @@ void player::show_logo()
 		Sleep(100);
 
 	}
+	hello();
 	Sleep(600);
 }
 void player::show_cow()
@@ -828,7 +835,118 @@ int correct_input(int min, int max, char input[])
 	} while (!is_correct);
 	return num;
 }
+//morse functions
+void hello()
+{
+	//convert "hello" string to morse
+	Beep(900, 100);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+	// cin.get();
 
+	Beep(900, 100);
+	_sleep(100);
+	//cin.get();
+
+	Beep(900, 100);
+	_sleep(100);
+	Beep(900, 250);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+	//cin.get();
+
+	Beep(900, 100);
+	_sleep(100);
+	Beep(900, 250);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+	//cin.get();
+
+	Beep(900, 250);
+	_sleep(100);
+	Beep(900, 250);
+	_sleep(100);
+	Beep(900, 250);
+	_sleep(100);
+	//cin.get();
+}
+void bye()
+{
+	//convert "bye" string to morse
+	Beep(900, 250);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+	//cin.get();
+
+	Beep(900, 250);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+	Beep(900, 250);
+	_sleep(100);
+	Beep(900, 250);
+	_sleep(100);
+	//cin.get();
+
+	Beep(900, 100);
+	_sleep(100);
+	//cin.get();
+}
+void the_end()
+{
+	//convert "the end" string to morse
+	Beep(900, 250);
+	_sleep(100);
+	//cin.get();
+
+	Beep(900, 100);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+	//cin.get();
+
+	Beep(900, 100);
+	_sleep(100);
+	// cin.get();
+
+	Beep(900, 100);
+	_sleep(100);
+	//cin.get();
+
+	Beep(900, 250);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+	//cin.get();
+
+	Beep(900, 250);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+
+}
 //main function
 int main()
 {
