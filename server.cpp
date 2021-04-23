@@ -153,6 +153,8 @@ public:
 	tcp::socket* get_sock();
 	string get_name() { return name; };
 
+	void set_are_connected(bool x) { are_connected = x; };
+
 	void registration();
 	string choose_opponent();
 	bool send_req(string opp);
@@ -172,10 +174,13 @@ private:
 	string name;
 	tcp::socket sock;
 	static vector<string> names;
+	static int are_connected;
+
 };
 
 //initialize
 vector<string>player::names{};
+int player::are_connected = false;
 
 player::player(io_service& io_service, tcp::acceptor& acc)
 	:sock(io_service)
@@ -195,6 +200,7 @@ void player::registration()
 	name = buffer_cast<const char*>(buff.data());
 	name.erase(std::remove(name.begin(), name.end(), '\n'), name.end());
 	names.push_back(name);
+	cout << name<<endl;
 }
 string player::choose_opponent()
 {
@@ -262,39 +268,84 @@ void player::playgame(player* pl2, int n, ground g)
 	int i = 3;
 	while (i == 3)
 	{
-		this->read_move(pl2, s);
-		if (s == "0\n")
-			i = 2;
-		else
-		{
-			g.update_ground(atoi(s.c_str()) - 1, -1);
-			i = g.judge(n);
+		try {
+			this->read_move(pl2, s);
+			if (s == "0\n" && are_connected)
+				i = 2;
+			else
+			{
+				g.update_ground(atoi(s.c_str()) - 1, -1);
+				i = g.judge(n);
+			}
+			msg = s + '-' + to_string(i) + '-' + to_string(are_connected);
 		}
-		msg = s + '-' + to_string(i);
-		write(*(pl2->get_sock()), boost::asio::buffer(msg));
-		if (i != 3)
+		catch (boost::system::system_error& e)//if a user disconnect,the other will win.
 		{
-			msg = s + '-' + to_string(i);
+			are_connected = false;
+			s = "0\n";
+			i = 2;
+			msg = s + '-' + to_string(i) + '-' + to_string(are_connected);
+			write(*(pl2->get_sock()), boost::asio::buffer(msg));
+
+		}
+		try {
+			write(*(pl2->get_sock()), boost::asio::buffer(msg));
+			if (i != 3)
+			{
+				msg = s + '-' + to_string(i) + '-' + to_string(are_connected);
+				write(sock, boost::asio::buffer(msg));
+			}
+		}
+		catch (boost::system::system_error& e)//if a user disconnect,the other will win.
+		{
+			are_connected = false;
+			s = "0\n";
+			i = 1;
+			msg = s + '-' + to_string(i) + '-' + to_string(are_connected);
 			write(sock, boost::asio::buffer(msg));
+
 		}
 
+		//if the game is ended,break the loop.
 		if (i != 3)
 			break;
 
-		pl2->read_move(this, s);
-		if (s == "0\n")
-			i = 1;
-		else
-		{
-			g.update_ground(atoi(s.c_str()) - 1, -2);
-			i = g.judge(n);
+		try {
+			pl2->read_move(this, s);
+			if (s == "0\n" && are_connected)
+				i = 1;
+			else
+			{
+				g.update_ground(atoi(s.c_str()) - 1, -2);
+				i = g.judge(n);
+			}
+			msg = s + '-' + to_string(i) + '-' + to_string(are_connected);
 		}
-		msg = s + '-' + to_string(i);
-		write(sock, boost::asio::buffer(msg));
-		if (i != 3)
+		catch (boost::system::system_error& e)//if a user disconnect,the other will win.
 		{
-			msg = s + '-' + to_string(i);
+			are_connected = false;
+			s = "0\n";
+			i = 1;
+			msg = s + '-' + to_string(i) + '-' + to_string(are_connected);
+			write(sock, boost::asio::buffer(msg));
+
+		}
+		try {
+			write(sock, boost::asio::buffer(msg));
+			if (i != 3)
+			{
+				msg = s + '-' + to_string(i) + '-' + to_string(are_connected);
+				write(*(pl2->get_sock()), boost::asio::buffer(msg));
+			}
+		}
+		catch (boost::system::system_error& e)//if a user disconnect,the other will win.
+		{
+			are_connected = false;
+			s = "0\n";
+			i = 2;
+			msg = s + '-' + to_string(i) + '-' + to_string(are_connected);
 			write(*(pl2->get_sock()), boost::asio::buffer(msg));
+
 		}
 	}
 	this->after_game(pl2);
@@ -401,6 +452,7 @@ int main()
 	pl1.registration();
 	player pl2(io, acc);
 	pl2.registration();
+	pl2.set_are_connected(true);
 	string opp = pl2.choose_opponent();
 	//inja ye tabe find ham mikhaim ke farz mikonim darim.
 

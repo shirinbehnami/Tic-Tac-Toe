@@ -76,13 +76,14 @@ private:
 	void receiveFrom();
 	void sendTo();
 	void rematch();
-	void options_after_game(string choice);
 
 	tcp::socket sock;
 	int playernum;
 	string name;
+	static int are_connected;
 };
-
+//initialize
+int player::are_connected = true;
 //----------------------------------------------------------------------------
 //function of ground class 
 
@@ -451,18 +452,8 @@ void player::read_move(ground& gr, int n)
 	boost::asio::streambuf buff;
 	read_until(sock, buff, "\n");
 	string s = buffer_cast<const char*>(buff.data());
-	int num, state;
-	string sub = "-";
-	for (int i = 0; i < 2; i++)
-	{
-		size_t pos = s.find(sub);
-		stringstream geek(s.substr(0, pos));
-		if (i == 0)
-			geek >> num;
-		if (i == 1)
-			geek >> state;
-		s.erase(0, pos + sub.length());
-	}
+	int num = 0, state = 3;
+	sscanf_s(s.c_str(), "%d\n-%d-%d", &num, &state, &are_connected);
 	if (state != playernum && num != 0 && !(playernum == 1 && n == 1 && state == 0) && !(playernum == 2 && n != 1 && state == 0))
 	{
 		if (playernum == 1)
@@ -473,31 +464,26 @@ void player::read_move(ground& gr, int n)
 	if (state != 3)
 	{
 		system("cls");
-		SetColorAndBackground(1, 0);
-		cout << "//tic tac toe" << endl;
 		gr.show_ground(n);
 		this->show_result(state);
 	}
 }
-
 void player::show_result(int state)
 {
-	if (state == playernum)
 	{
-		SetColorAndBackground(2, 0);
-		cout << "congrajulations!\nyou wiiiiiiin!" << endl << endl;
+		if (!are_connected)
+			cout << "your opponent left the game.so..." << endl;
+		if (state == playernum)
+			cout << "congrajulations! you wiiiiiiin!" << endl;
+		else if (state == 0)
+			cout << "Draw!" << endl;
+		else
+			cout << "Game over:(" << endl;
+		if (are_connected)
+			after_game();
+		else
+			goodbye();
 	}
-	else if (state == 0)
-	{
-		SetColorAndBackground(2, 0);
-		cout << "Draw!" << endl << endl;
-	}
-	else
-	{
-		SetColorAndBackground(4, 0);
-		cout << "Game over:(" << endl << endl;
-	}
-	after_game();
 }
 
 void player::after_game()
