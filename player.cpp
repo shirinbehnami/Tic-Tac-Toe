@@ -82,8 +82,10 @@ private:
 	string name;
 	static int are_connected;
 };
+
 //initialize
 int player::are_connected = true;
+
 //----------------------------------------------------------------------------
 //function of ground class 
 
@@ -319,18 +321,45 @@ void player::choose_opponent()
 		SetColorAndBackground(2, 0);
 		cout << "choose your opponent :(enter their name)" << endl;
 		boost::asio::streambuf buff;
+
 		read_until(sock, buff, "\n");
-		string opp_name = buffer_cast<const char*>(buff.data());
-		cout << "   " << opp_name;
+		string s = buffer_cast<const char*>(buff.data());
+		int cnt = atoi(s.c_str());
+
+		vector<string> names;
+		for (int i = 0; i < cnt; i++)
+		{
+			boost::asio::streambuf buff;
+			read_until(sock, buff, "\n");
+			string opp_name = buffer_cast<const char*>(buff.data());
+			opp_name.erase(std::remove(opp_name.begin(), opp_name.end(), '\n'), opp_name.end());
+			cout << "   " << opp_name << endl;
+			transform(opp_name.begin(), opp_name.end(), opp_name.begin(), ::tolower);
+			names.push_back(opp_name);
+		}
 
 		//choose opponent
 		string msg;
-		SetColorAndBackground(14, 0);
-		getline(cin, msg);
-		write(sock, boost::asio::buffer(msg + "\n"));
-		SetColorAndBackground(2, 0);
-		cout << "pending..." << endl;
+		while (find(names.begin(), names.end(), msg) == names.end())
+		{
+			SetColorAndBackground(2, 0);
+			cout << ">>";
+			SetColorAndBackground(14, 0);
+			getline(cin, msg);
+			transform(msg.begin(), msg.end(), msg.begin(), ::tolower);
 
+			if (find(names.begin(), names.end(), msg) == names.end())
+			{
+				SetColorAndBackground(4, 0);
+				cout << "invalid input.try again" << endl;
+			}
+			else
+			{
+				write(sock, boost::asio::buffer(msg + "\n"));
+				SetColorAndBackground(2, 0);
+				cout << "pending..." << endl;
+			}
+		}
 	}
 	else if (s == "one\n")
 	{
@@ -471,6 +500,7 @@ void player::read_move(ground& gr, int n)
 void player::show_result(int state)
 {
 	{
+		SetColorAndBackground(6, 0);
 		if (!are_connected)
 			cout << "your opponent left the game.so..." << endl;
 		if (state == playernum)
@@ -560,11 +590,11 @@ void player::receive_ans(int& flag, string& choice)
 	SetColorAndBackground(2, 0);
 	if (choice == "1\n")
 	{
-		cout << "Your opponent wants to play again." << endl;
+		cout << "\nYour opponent wants to play again." << endl;
 	}
 	else if (choice == "2\n")
 	{
-		cout << "Your opponent wants to chat." << endl;
+		cout << "\nYour opponent wants to chat." << endl;
 	}
 	cout << "1-Accept" << endl << "2-Decline" << endl << "3-exit" << endl;
 }
@@ -641,12 +671,12 @@ int correct_input(int min, int max)
 		if (num == 0)
 		{
 			SetColorAndBackground(4, 0);
-			cout << "invalid input.try again" << endl;
+			cout << "\ninvalid input.try again" << endl;
 		}
 		else if (num<min || num>max)
 		{
 			SetColorAndBackground(4, 0);
-			cout << "out of range.try again" << endl;
+			cout << "\nout of range.try again" << endl;
 		}
 		else
 			is_correct = true;

@@ -200,18 +200,24 @@ void player::registration()
 	name = buffer_cast<const char*>(buff.data());
 	name.erase(std::remove(name.begin(), name.end(), '\n'), name.end());
 	names.push_back(name);
-	cout << name<<endl;
+	cout << name << endl;
 }
 string player::choose_opponent()
 {
 	string s = "two";
 	s += "\n";
 	write(sock, boost::asio::buffer(s));
+
+	string cnt = to_string(names.size() - 1);
+	cnt += "\n";
+	write(sock, boost::asio::buffer(cnt));
+	Sleep(1);
+
 	string msg;
 	for (int i = 0; i < names.size(); i++)
 		if (names[i] != name)
-			msg += names[i];
-	write(sock, boost::asio::buffer(msg + "\n"));
+			msg += (names[i] + "\n");
+	write(sock, boost::asio::buffer(msg));
 
 
 	boost::asio::streambuf buff;
