@@ -23,7 +23,10 @@ void SetColorAndBackground(int ForgC, int BackC)
 //general functions
 int correct_input(int min, int max);
 int correct_input(int min, int max, char input[]);
-
+//general function-morse
+void hello();
+void bye();
+void the_end();
 //ground class
 class ground
 {
@@ -509,12 +512,22 @@ void player::show_result(int state)
 		SetColorAndBackground(6, 0);
 		if (!are_connected)
 			cout << "your opponent left the game.so..." << endl;
+
 		if (state == playernum)
+		{
 			cout << "congrajulations! you wiiiiiiin!" << endl;
+			the_end();
+		}
 		else if (state == 0)
+		{
 			cout << "Draw!" << endl;
+			the_end();
+		}
 		else
+		{
 			cout << "Game over:(" << endl;
+			the_end();
+		}
 		if (are_connected)
 			after_game();
 		else
@@ -655,6 +668,7 @@ void player::goodbye()
 {
 	SetColorAndBackground(2, 0);
 	cout << "felan khodahafezzzz" << endl;
+	bye();
 	exit(0);
 }
 //----------------------------------------------------------------------------------
@@ -710,6 +724,7 @@ void player::show_logo()
 		Sleep(100);
 
 	}
+	hello();
 	Sleep(600);
 }
 void player::show_cow()
@@ -828,7 +843,118 @@ int correct_input(int min, int max, char input[])
 	} while (!is_correct);
 	return num;
 }
+//morse functions
+void hello()
+{
+	//convert "hello" string to morse
+	Beep(900, 100);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+	// cin.get();
 
+	Beep(900, 100);
+	_sleep(100);
+	//cin.get();
+
+	Beep(900, 100);
+	_sleep(100);
+	Beep(900, 250);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+	//cin.get();
+
+	Beep(900, 100);
+	_sleep(100);
+	Beep(900, 250);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+	//cin.get();
+
+	Beep(900, 250);
+	_sleep(100);
+	Beep(900, 250);
+	_sleep(100);
+	Beep(900, 250);
+	_sleep(100);
+	//cin.get();
+}
+void bye()
+{
+	//convert "bye" string to morse
+	Beep(900, 250);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+	//cin.get();
+
+	Beep(900, 250);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+	Beep(900, 250);
+	_sleep(100);
+	Beep(900, 250);
+	_sleep(100);
+	//cin.get();
+
+	Beep(900, 100);
+	_sleep(100);
+	//cin.get();
+}
+void the_end()
+{
+	//convert "the end" string to morse
+	Beep(900, 250);
+	_sleep(100);
+	//cin.get();
+
+	Beep(900, 100);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+	//cin.get();
+
+	Beep(900, 100);
+	_sleep(100);
+	// cin.get();
+
+	Beep(900, 100);
+	_sleep(100);
+	//cin.get();
+
+	Beep(900, 250);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+	//cin.get();
+
+	Beep(900, 250);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+	Beep(900, 100);
+	_sleep(100);
+
+}
 //main function
 int main()
 {
