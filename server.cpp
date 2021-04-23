@@ -164,7 +164,7 @@ public:
 private:
 	void read_move(player* pl, string& s);
 	void after_game(player* pl2);
-	void receive_ans(player* pl, player*& flag);
+	void receive_ans(player* pl, player*& flag, player* firstpl, player* secondpl);
 	void rematch(player* pl1, player* pl2);
 	void chat(player* pl2);
 	void chat_transition(player* p1, player* p2);
@@ -309,8 +309,8 @@ void player::read_move(player* pl, string& s)
 void player::after_game(player* pl2)
 {
 	player* flag = NULL;
-	thread t1(&player::receive_ans, this, pl2, ref(flag));
-	thread t2(&player::receive_ans, pl2, this, ref(flag));
+	thread t1(&player::receive_ans, this, pl2, ref(flag), this, pl2);
+	thread t2(&player::receive_ans, pl2, this, ref(flag), this, pl2);
 	while (1)
 	{
 		if (flag == this)
@@ -329,7 +329,7 @@ void player::after_game(player* pl2)
 		}
 	}
 }
-void player::receive_ans(player* pl, player*& flag)
+void player::receive_ans(player* pl, player*& flag, player* firstpl, player* secondpl)
 {
 	// Receive request of player1
 	boost::asio::streambuf buff;
@@ -356,7 +356,7 @@ void player::receive_ans(player* pl, player*& flag)
 		write(this->sock, boost::asio::buffer(answer));
 
 		if (choice == "1\n" && answer == "1\n")
-			rematch(pl, this);
+			rematch(secondpl, firstpl);
 		else if (choice == "2\n" && answer == "1\n")
 			this->chat(pl);
 		else
