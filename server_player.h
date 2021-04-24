@@ -1,4 +1,6 @@
 
+#include"server_ground.h"
+
 class player
 {
 public:
@@ -31,7 +33,6 @@ private:
 	static int are_connected;
 
 };
-
 
 vector<string>player::names{};
 int player::are_connected = false;

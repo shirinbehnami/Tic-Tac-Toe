@@ -1,6 +1,5 @@
 //server
 
-#include "server_ground.h"
 #include "server_player.h"
 
 int main()

@@ -39,100 +39,7 @@ private:
 	static int are_connected;
 };
 
-
-
-//---------------------------------------------------------------------------
-//other function
-void SetColorAndBackground(int ForgC, int BackC)
-{
-	WORD wColor = ((BackC & 0x0F) << 4) + (ForgC & 0x0F);;
-	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), wColor);
-	return;
-}
-int correct_input(int min, int max)
-{
-	bool is_correct = false;
-	string msg;
-	int num;
-	char* ptr;
-	do {
-		SetColorAndBackground(2, 0);
-		cout << ">> ";
-		SetColorAndBackground(14, 0);
-		getline(cin, msg);
-		msg += "\n";
-		num = strtol(msg.c_str(), &ptr, 10);
-		if (num == 0)
-		{
-			SetColorAndBackground(4, 0);
-			cout << "\ninvalid input.try again" << endl;
-		}
-		else if (num<min || num>max)
-		{
-			SetColorAndBackground(4, 0);
-			cout << "\nout of range.try again" << endl;
-		}
-		else
-			is_correct = true;
-
-	} while (!is_correct);
-	return num;
-}
-int correct_input(int min, int max, char input[])
-{
-	bool is_correct = false;
-	int num, cnt = 0;
-	do {
-		SetColorAndBackground(2, 0);
-		cout << ">> ";
-		while (1)
-		{
-			SetColorAndBackground(14, 0);
-			char c = _getch();
-			input[cnt] = c;
-			input[cnt + 1] = '\0';
-			if (input[cnt] == '\b')
-			{
-				cout << "\b \b";
-				if (cnt != 0)
-				{
-					cnt--;
-					input[cnt] = '\0';
-				}
-			}
-			else if (input[cnt] != '\r')
-			{
-				cout << input[cnt];
-				cnt++;
-			}
-			else
-			{
-				cnt++;
-				break;
-			}
-		}
-		input[cnt - 1] = '\0';
-		num = atoi(input);
-		if (num == 0 && input[0] != '0')
-		{
-			SetColorAndBackground(4, 0);
-			cout << "invalid input.try again" << endl;
-			input[0] = '\0';
-			cnt = 0;
-		}
-		else if (num<min || num>max)
-		{
-			SetColorAndBackground(1, 0);
-			cout << "out of range.try again" << endl;
-			input[0] = '\0';
-			cnt = 0;
-		}
-		else
-			is_correct = true;
-
-	} while (!is_correct);
-	return num;
-}
+int player::are_connected = true;
 
 //---------------------------------------------------------------------------
 //morse functions
@@ -250,7 +157,6 @@ void the_end()
 
 //---------------------------------------------------------------------------
 //function of player class 
-int player::are_connected = true;
 
 player::player(io_service& io_service)
 	:sock(io_service)
