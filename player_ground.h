@@ -1,4 +1,3 @@
-
 #include<iostream>
 #include<vector>
 #include <boost/asio.hpp>
@@ -51,9 +50,9 @@ int correct_input(int min, int max)
 	int num;
 	char* ptr;
 	do {
-		SetColorAndBackground(2, 0);
+		SetColorAndBackground(3, 0);
 		cout << ">> ";
-		SetColorAndBackground(14, 0);
+		SetColorAndBackground(15, 0);
 		getline(cin, msg);
 		msg += "\n";
 		num = strtol(msg.c_str(), &ptr, 10);
@@ -78,11 +77,11 @@ int correct_input(int min, int max, char input[])
 	bool is_correct = false;
 	int num, cnt = 0;
 	do {
-		SetColorAndBackground(2, 0);
+		SetColorAndBackground(3, 0);
 		cout << ">> ";
 		while (1)
 		{
-			SetColorAndBackground(14, 0);
+			SetColorAndBackground(15, 0);
 			char c = _getch();
 			input[cnt] = c;
 			input[cnt + 1] = '\0';
@@ -111,16 +110,18 @@ int correct_input(int min, int max, char input[])
 		if (num == 0 && input[0] != '0')
 		{
 			SetColorAndBackground(4, 0);
-			cout << "invalid input.try again" << endl;
+			cout << "\ninvalid input.try again" << endl;
 			input[0] = '\0';
 			cnt = 0;
+			Sleep(600);
 		}
 		else if (num<min || num>max)
 		{
-			SetColorAndBackground(1, 0);
-			cout << "out of range.try again" << endl;
+			SetColorAndBackground(4, 0);
+			cout << "\nout of range.try again" << endl;
 			input[0] = '\0';
 			cnt = 0;
+			Sleep(600);
 		}
 		else
 			is_correct = true;
@@ -175,7 +176,7 @@ void ground::show_ground_timer(int n, int& flag, char input_num[])
 	{
 		displayClock(time[0], time[1]);
 		this->show_ground(n);
-		SetColorAndBackground(14, 0);
+		SetColorAndBackground(15, 0);
 		cout << input_num;
 		Sleep(1000);
 		time[1]--;
@@ -202,7 +203,7 @@ void ground::show_ground1()
 		else
 			showground.push_back(to_string(blocks[i]));
 	}
-	SetColorAndBackground(6, 0);
+	SetColorAndBackground(5, 0);
 	cout << endl << endl;
 	cout << "    " << showground[0] << " _____ " << showground[1] << " _____ " << showground[2] << endl;
 	cout << "    |       |       |" << endl;
@@ -227,7 +228,7 @@ void ground::show_ground2()
 		else
 			showground.push_back(to_string(blocks[i]));
 	}
-	SetColorAndBackground(6, 0);
+	SetColorAndBackground(5, 0);
 	cout << endl;
 	cout << "    " << left << showground[0] << " _____ " << showground[1] << " _____ " << showground[2] << endl;
 	cout << "    |       |       |" << endl;
@@ -253,7 +254,7 @@ void ground::show_ground3()
 			showground.push_back(to_string(blocks[i]));
 	}
 
-	SetColorAndBackground(6, 0);
+	SetColorAndBackground(5, 0);
 	cout << endl;
 	cout <<
 		"    " << showground[0] << " __________ " << showground[1] << " __________ " << showground[2] << endl
@@ -263,23 +264,23 @@ void ground::show_ground3()
 		<< "    |   |   " << showground[6] << " __ " << showground[7] << " __ " << showground[8] << "   |   |" << endl
 		<< "    |   |   |         |   |   |" << endl
 		<< "    |   |   |         |   |   |" << endl
-		<< "    " << showground[9] << "__" << setw(2) << showground[10] << "__" << setw(2) << showground[11] << "        " << showground[12] << "__" << showground[13] << "__" << showground[14] << endl
+		<< "    " << showground[9] << "__" << setw(2) << showground[10] << "__" << setw(2) << showground[11] << "        " << setw(2) << showground[12] << "__" << setw(2) << showground[13] << "__" << setw(2) << showground[14] << endl
 		<< "    |   |   |         |   |   |" << endl
 		<< "    |   |   |         |   |   |" << endl
-		<< "    |   |   " << showground[15] << "___" << showground[16] << "___" << showground[17] << "  |   |" << endl
+		<< "    |   |   " << setw(2) << showground[15] << "___" << setw(2) << showground[16] << "___" << setw(2) << showground[17] << "  |   |" << endl
 		<< "    |   |  /     |      \\ |   |" << endl
-		<< "    |   " << showground[18] << "_______" << showground[19] << "_______" << showground[20] << "  |" << endl
+		<< "    |   " << setw(2) << showground[18] << "_______" << setw(2) << showground[19] << "_______" << setw(2) << showground[20] << "  |" << endl
 		<< "    |  /         |         \\  |" << endl
-		<< "    " << setw(2) << showground[21] << "___________" << showground[22] << "___________" << showground[23] << endl << endl;
+		<< "    " << setw(2) << showground[21] << "___________" << setw(2) << showground[22] << "___________" << setw(2) << showground[23] << endl << endl;
 
 }
 
 void ground::displayClock(int min, int sec)
 {
 	system("cls");
-	SetColorAndBackground(1, 0);
+	SetColorAndBackground(8, 0);
 	cout << "//OX" << endl << endl;
-	SetColorAndBackground(2, 0);
+	SetColorAndBackground(7, 0);
 	cout << "         TIME      \n";
 	cout << "   ----------------\n";
 	if (min == 0 && sec <= 20)
@@ -288,11 +289,11 @@ void ground::displayClock(int min, int sec)
 		cout << "  | ";
 		SetColorAndBackground(4, 0);
 		cout << min << " min ";
-		SetColorAndBackground(2, 0);
+		SetColorAndBackground(7, 0);
 		cout << "  | ";
 		SetColorAndBackground(4, 0);
 		cout << sec << " sec ";
-		SetColorAndBackground(2, 0);
+		SetColorAndBackground(7, 0);
 		cout << "| " << endl;
 	}
 	else
@@ -315,8 +316,9 @@ int ground::correct_block(char input_num[])
 		if (blocks[num - 1] == -1 || blocks[num - 1] == -2)
 		{
 			SetColorAndBackground(4, 0);
-			cout << "this block is full.try another one." << endl;
+			cout << "\nthis block is full.try another one." << endl;
 			input_num[0] = '\0';
+			Sleep(600);
 		}
 		else
 			is_correct = true;

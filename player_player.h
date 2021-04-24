@@ -1,4 +1,3 @@
-
 #include "player_ground.h"
 
 class player
@@ -43,117 +42,35 @@ int player::are_connected = true;
 
 //---------------------------------------------------------------------------
 //morse functions
-void hello()
-{
-	//convert "hello" string to morse
-	Beep(900, 100);
-	_sleep(100);
-	Beep(900, 100);
-	_sleep(100);
-	Beep(900, 100);
-	_sleep(100);
-	Beep(900, 100);
-	_sleep(100);
-	// cin.get();
 
-	Beep(900, 100);
-	_sleep(100);
-	//cin.get();
-
-	Beep(900, 100);
-	_sleep(100);
-	Beep(900, 250);
-	_sleep(100);
-	Beep(900, 100);
-	_sleep(100);
-	Beep(900, 100);
-	_sleep(100);
-	//cin.get();
-
-	Beep(900, 100);
-	_sleep(100);
-	Beep(900, 250);
-	_sleep(100);
-	Beep(900, 100);
-	_sleep(100);
-	Beep(900, 100);
-	_sleep(100);
-	//cin.get();
-
-	Beep(900, 250);
-	_sleep(100);
-	Beep(900, 250);
-	_sleep(100);
-	Beep(900, 250);
-	_sleep(100);
-	//cin.get();
-}
 void bye()
 {
 	//convert "bye" string to morse
 	Beep(900, 250);
-	_sleep(100);
+	Sleep(100);
 	Beep(900, 100);
-	_sleep(100);
+	Sleep(100);
 	Beep(900, 100);
-	_sleep(100);
+	Sleep(100);
 	Beep(900, 100);
-	_sleep(100);
+	Sleep(100);
 	//cin.get();
 
 	Beep(900, 250);
-	_sleep(100);
+	Sleep(100);
 	Beep(900, 100);
-	_sleep(100);
+	Sleep(100);
 	Beep(900, 250);
-	_sleep(100);
+	Sleep(100);
 	Beep(900, 250);
-	_sleep(100);
+	Sleep(100);
 	//cin.get();
 
 	Beep(900, 100);
-	_sleep(100);
+	Sleep(100);
 	//cin.get();
 }
-void the_end()
-{
-	//convert "the end" string to morse
-	Beep(900, 250);
-	_sleep(100);
-	//cin.get();
 
-	Beep(900, 100);
-	_sleep(100);
-	Beep(900, 100);
-	_sleep(100);
-	Beep(900, 100);
-	_sleep(100);
-	Beep(900, 100);
-	_sleep(100);
-	//cin.get();
-
-	Beep(900, 100);
-	_sleep(100);
-	// cin.get();
-
-	Beep(900, 100);
-	_sleep(100);
-	//cin.get();
-
-	Beep(900, 250);
-	_sleep(100);
-	Beep(900, 100);
-	_sleep(100);
-	//cin.get();
-
-	Beep(900, 250);
-	_sleep(100);
-	Beep(900, 100);
-	_sleep(100);
-	Beep(900, 100);
-	_sleep(100);
-
-}
 
 //---------------------------------------------------------------------------
 //function of player class 
@@ -171,14 +88,14 @@ tcp::socket* player::get_sock()
 
 void player::registeration()
 {
-	SetColorAndBackground(1, 0);
+	SetColorAndBackground(8, 0);
 	cout << "//OX" << endl;
-	SetColorAndBackground(2, 0);
+	SetColorAndBackground(3, 0);
 	cout << "Hi! what's your name? >> ";
-	SetColorAndBackground(14, 0);
+	SetColorAndBackground(15, 0);
 	getline(cin, name);
 	write(sock, boost::asio::buffer(name + "\n"));
-	SetColorAndBackground(2, 0);
+	SetColorAndBackground(3, 0);
 	cout << "registration completed.:)" << endl << endl;
 }
 void player::choose_opponent()
@@ -193,7 +110,7 @@ void player::choose_opponent()
 
 		//show options
 		playernum = 2;
-		SetColorAndBackground(2, 0);
+		SetColorAndBackground(3, 0);
 		cout << "choose your opponent :(enter their name)" << endl;
 
 		boost::asio::streambuf buff;
@@ -207,9 +124,9 @@ void player::choose_opponent()
 		string msg;
 		while (msg != opp_name)
 		{
-			SetColorAndBackground(2, 0);
+			SetColorAndBackground(3, 0);
 			cout << ">>";
-			SetColorAndBackground(14, 0);
+			SetColorAndBackground(15, 0);
 			getline(cin, msg);
 			transform(msg.begin(), msg.end(), msg.begin(), ::tolower);
 
@@ -221,7 +138,7 @@ void player::choose_opponent()
 			else
 			{
 				write(sock, boost::asio::buffer(msg + "\n"));
-				SetColorAndBackground(2, 0);
+				SetColorAndBackground(3, 0);
 				cout << "pending..." << endl;
 			}
 		}
@@ -235,7 +152,8 @@ void player::choose_opponent()
 		read_until(sock, buff, "\n");
 		string s = buffer_cast<const char*>(buff.data());
 		s.erase(std::remove(s.begin(), s.end(), '\n'), s.end());
-		SetColorAndBackground(2, 0);
+		SetColorAndBackground(3, 0);
+		Beep(500, 300);
 		cout << s << " wants to play." << endl;
 		cout << "1-Accept" << endl << "2-Decline" << endl;
 
@@ -258,9 +176,9 @@ bool player::accept_or_reject()
 int player::start_game()
 {
 	system("cls");
-	SetColorAndBackground(1, 0);
+	SetColorAndBackground(8, 0);
 	cout << "//OX" << endl;
-	SetColorAndBackground(2, 0);
+	SetColorAndBackground(3, 0);
 	if (playernum == 1)
 	{
 		cout << "you are the first player! choose the ground :)(enter its number)." << endl << endl << endl;
@@ -282,7 +200,7 @@ int player::start_game()
 }
 void player::show_all_grounds()
 {
-	SetColorAndBackground(6, 0);
+	SetColorAndBackground(5, 0);
 	cout << "  O_______O_______O            O_______O_______O            O_______O_______O" << endl;
 	cout << "  |       |       |            |       |       |            | \\     |     / |" << endl;
 	cout << "  |       |       |            |       |       |            |  O____O____O  |" << endl;
@@ -296,6 +214,8 @@ void player::show_all_grounds()
 	cout << "  |       |       |            |       |       |            |  O____O____O  |" << endl;
 	cout << "  |       |       |            |       |       |            | /     |     \\ |" << endl;
 	cout << "  O_______O_______O            O_______O_______O            O_______O_______O" << endl << endl;
+
+	SetColorAndBackground(7, 0);
 	cout << "         (1)                          (2)                          (3)          " << endl << endl;
 }
 
@@ -365,24 +285,26 @@ void player::read_move(ground& gr, int n)
 void player::show_result(int state)
 {
 	{
-		SetColorAndBackground(6, 0);
 		if (!are_connected)
+		{
+			SetColorAndBackground(11, 0);
 			cout << "your opponent left the game.so..." << endl;
+		}
 
 		if (state == playernum)
 		{
+			SetColorAndBackground(13, 0);
 			cout << "congrajulations! you wiiiiiiin!" << endl;
-			the_end();
 		}
 		else if (state == 0)
 		{
+			SetColorAndBackground(7, 0);
 			cout << "Draw!" << endl;
-			the_end();
 		}
 		else
 		{
+			SetColorAndBackground(4, 0);
 			cout << "Game over:(" << endl;
-			the_end();
 		}
 		if (are_connected)
 			after_game();
@@ -407,7 +329,7 @@ void player::after_game()
 void player::send_ans(int& flag, string& choice)
 {
 	string ans;
-	SetColorAndBackground(2, 0);
+	SetColorAndBackground(3, 0);
 	cout << "\n";
 	cout << "1-Rematch" << endl << "2-Chat" << endl << "3-Exit" << endl;
 	int x = correct_input(1, 3);
@@ -417,7 +339,7 @@ void player::send_ans(int& flag, string& choice)
 		choice = to_string(x) + "\n";
 		write(sock, boost::asio::buffer(choice));
 		flag = 2;
-		SetColorAndBackground(2, 0);
+		SetColorAndBackground(3, 0);
 		if (x != 3)
 			cout << "pending..." << endl;
 		else
@@ -462,15 +384,19 @@ void player::receive_ans(int& flag, string& choice)
 		return;
 	flag = 1;
 	choice = buffer_cast<const char*>(buff.data());
-	SetColorAndBackground(2, 0);
+	SetColorAndBackground(3, 0);
 	if (choice == "1\n")
 	{
+		Beep(500, 300);
 		cout << "\nYour opponent wants to play again." << endl;
 	}
 	else if (choice == "2\n")
 	{
+		Beep(500, 300);
 		cout << "\nYour opponent wants to chat." << endl;
 	}
+	else
+		goodbye();
 	cout << "1-Accept" << endl << "2-Decline" << endl << "3-exit" << endl;
 }
 void player::rematch()
@@ -486,7 +412,7 @@ void player::rematch()
 }
 void player::chat()
 {
-	SetColorAndBackground(2, 0);
+	SetColorAndBackground(8, 0);
 	system("cls");
 	cout << "__________________________________________________________" << endl;
 	cout << "|                   Welcome to OX chat                   |" << endl;
@@ -507,16 +433,16 @@ void player::receiveFrom()
 		string s = buffer_cast<const char*>(buff.data());
 		if (s == "EXIT\n")
 			goodbye();
-		SetColorAndBackground(9, 0);
+		SetColorAndBackground(3, 0);
 		cout << s;
-		SetColorAndBackground(14, 0);
+		SetColorAndBackground(5, 0);
 	}
 }
 void player::sendTo()
 {
 	while (1) {
 		string msg;
-		SetColorAndBackground(14, 0);
+		SetColorAndBackground(5, 0);
 		getline(cin, msg);
 		msg += "\n";
 		write(sock, boost::asio::buffer(msg));
@@ -530,8 +456,10 @@ void player::sendTo()
 
 void player::goodbye()
 {
-	SetColorAndBackground(2, 0);
+	SetColorAndBackground(7, 0);
 	cout << "felan khodahafezzzz" << endl;
+	SetColorAndBackground(8, 0);
+	cout << "you're listening to ""bye"" in morse language:)";
 	bye();
 	exit(0);
 }
@@ -540,22 +468,27 @@ void player::goodbye()
 //graphics
 void player::calc(int i, int j)
 {
-	if (i == 26)
+	if (i == 27)
+	{
+		SetColorAndBackground(5, 0);
+		return;
+	}
+	if (i == 26 || i==28)
 	{
 		SetColorAndBackground(13, 0);
 		return;
 	}
 
-	if (i == j || i == 9 + j || i == j + 18)
+	if (i == j|| i==j+9 || i == j + 18)
 		SetColorAndBackground(13, 0);
 	else
-		SetColorAndBackground(8, 0);
+		SetColorAndBackground(7, 0);
 }
 void player::show_logo()
 {
 
 	Sleep(2000);
-	for (int i = 0; i < 27; i++)
+	for (int i = 0; i < 29; i++)
 	{
 		system("cls");
 		calc(i, 0);
@@ -586,15 +519,17 @@ void player::show_logo()
 		cout <<
 			"ooooooooooooooooooooooooooooooooooooooooooooooooooo\n";
 		show_cow();
-		Sleep(100);
+		if (i != 27 && i!=26)
+			Sleep(100);
+		else
+			Sleep(600);
 
 	}
-	hello();
 	Sleep(600);
 }
 void player::show_cow()
 {
-	SetColorAndBackground(8, 0);
+	SetColorAndBackground(7, 0);
 	cout <<
 		"           O                                O\n"
 		"              (      )        o   O                \n"
