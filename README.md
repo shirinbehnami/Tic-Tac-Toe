@@ -1,5 +1,3 @@
-**In the name of god**
-
 # OX
 
 If you're looking for a comfortable platform to play xo , OX is the best choice.:)
